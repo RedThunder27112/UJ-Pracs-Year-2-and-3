@@ -1,0 +1,21 @@
+theory
+application focus
+
+
+Q1 extended ERD  - must show inheritance  15-20 marks
+Q2 10 marks based on EERD, eg why did you choose PK (based on what you have done in the EERD)
+Q3 Normalisation 30marks, can do, know what is.
+if 4NF, will be theoretical, not converting, but know what is
+Q4 15-20 marks for sql, everything in pracs/discussed
+eg aggregate function
+
+cardinality, multiplicity is tested 
+
+cannot reference prev questions
+erd and EERD is different. eerd shows inheritance, erd doesnt
+
+for normalisation: must know correct notation.... schema notation
+
+
+
+

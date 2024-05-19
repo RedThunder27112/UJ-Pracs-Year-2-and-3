@@ -1,0 +1,32 @@
+conbining tables
+
+Union conbines 2 querries with no duplicates, |A| + |B| - |A ^ B|
+while Union all conbines 2 querries with duplicates. |A| + |B| ie |A U B|
+
+INtersect is |A ^ B|
+
+Difference ONLY IN TABLE a, NOT IN TABLE B
+Your focus is on the first table ie only displays the first table, with records that are not int the 2nd table.
+ie |A| - |A ^ B|
+
+Project - selecting a columb
+
+Product - select statement with no linking table, *:* kinda look
+takes table A, and conbines it with table B, in every possible conbination.
+-will be asked to do this without product keyword. 
+
+
+****NB have to sue join when linking tables in pracs now
+JOINS:
+inner joins: joins with at least one match in both tables. |A ^ B| should not see null values
+left joing: returns all left rows, and mathing tables from right table  |A| + |A ^ B|      
+right table: returns all right rows, and matching tables from left table.|B| + |A ^ B|
+
+Full (outer) join: shows everything. |A| + |B| + |A ^ B| 
+
+
+Select col names
+From t1 inner join t2
+on t1.col = t2.col
+
+

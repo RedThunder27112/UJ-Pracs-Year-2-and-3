@@ -1,0 +1,31 @@
+CREATE TABLE Person(
+id VARCHAR(9) UNIQUE NOT NULL,
+personname VARCHAR(50)NOT NULL,
+personsurname VARCHAR(50) NOT NULL,
+persontel VARCHAR(11) NOT NULL,
+personemail VARCHAR(50) NOT NULL,
+PRIMARY KEY (id)
+);
+
+
+CREATE TABLE Car(
+car_reg VARCHAR(10) UNIQUE NOT NULL,
+carbrand VARCHAR(30) NOT NULL,
+carmodel VARCHAR(20) NOT NULL,
+caryear DATE NOT NULL,
+carprice double NOT NULL,
+id VARCHAR(9) NOT NULL,
+PRIMARY KEY(car_reg),
+FOREIGN KEY (id) REFERENCES Person
+);
+
+Select *
+FROM Person LEFT JOIN Car
+ON Person.id = Car.id;
+
+
+
+insert into CAR SELECT car_reg,carbrand....,'something' as [extraName] , WHERE p03data;
+-when you dont have the col value, you can use this as a default value.
+
+is nulls

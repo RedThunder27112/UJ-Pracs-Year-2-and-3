@@ -1,0 +1,9 @@
+NEed to know what is eg a database, what is a dbms
+History: need to know how it was, how it worked, how it developed,
+ and how it worked (6)
+
+Schema
+logical dependance
+database design process
+
+up to monday lecture 

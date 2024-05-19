@@ -1,0 +1,8 @@
+Q1)
+No
+
+Q2)
+There is information on the vehicle of the student, in the student table.
+
+Q3)
+Creating multiple tables and linking them in a relationship. ie Student table and car table. 

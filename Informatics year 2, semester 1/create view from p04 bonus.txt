@@ -1,0 +1,19 @@
+name and price of game with lowest average rating
+
+CREATE VIEW QH_1 AS
+Select Game.name, Game.price, Avg(R_Rating) AS [AvgRating]
+FROM Game inner join Subscription
+ON Game.game_ID = Subscription.game_ID
+GROUP BY Game.name, Game.price
+
+CREATE VIEW QH_2 AS
+Select Min(AvgRating) as [LowestAvg]
+FROM QH_1
+
+
+SELECT * FROM QH_1
+WHERE [AvgRating] IN (QH_2)
+
+
+
+

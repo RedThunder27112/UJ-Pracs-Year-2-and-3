@@ -1,0 +1,14 @@
+CREATE TABLE Access_Person(
+UJ_ID INT NOT NULL UNIQUE,
+P_Name CHAR(255) NOT NULL,
+P_Surname CHAR(255) NOT NULL,
+P_Tel INT NOT NULL,
+P_Email Char(255) NOT NULL,
+P_CarReg CHAR(255) NOT NULL,
+P_CarBrand CHAR(255) NOT NULL,
+P_CarModel CHAR(255) NOT NULL,
+P_Colour CHAR(255) NOT NULL,
+PRIMARY KEY(UJ_ID));
+
+INSERT INTO Access_Person
+VALUES ('221003350', 'Ariel', 'Sischy', '0773779524', '221003350@student.uj.ac.za', 'ABG463L', 'Teyota','2012ASeries','Red');

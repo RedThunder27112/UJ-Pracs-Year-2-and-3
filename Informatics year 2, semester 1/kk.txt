@@ -1,0 +1,96 @@
+Info study
+Prac side
+definitions
+both life cycles!!!!!!!
+database design process (models)
+^^^Look at text  book as well.
+
+A database is a shared,integrated computer structure that stores end user data and meta data
+A dbms on the other hand is a set of programs that manage database(s) and control user access to the data.
+This increases the effectiveness and efficiency of databases.
+Allows multiple programs and users (XML) to access textual data.
+Components of DBMS: People, Software, Hardware, Procedures, data
+
+1st file systems - had no relationships, only records. 
+2nd Hierarchial - Developed due to the need for more complex records with relationships.
+Works by having a parent file, which can have many children. many 1:* relationships. no *:*
+3rd Network - More complex data, such as *:* relationships + impose standard
+This works with *:* relatonships
+4th Relationship: Developed to create an easier to understand model of complex relationships
+works by hiding a lot of complexities from user
+THis is a ERD relations.
+5th Object oriented model: Developed so as to have more complex models
+where the object is both the Enitity, and it's relationships.
+6th Extended Relationship; Is a bit of both Object oriented and relationship.
+Was developed due to store multimedia data, due to the ever growing complexity of apps
+7th NoSql: Devloped due to the need to store BigData due to the internet
+Does not store relationships, instead each row will store a key, and a value.
+THe key stores an attribute name - IE can be DOB in one row, and Name in the next.
+While value will store the actual value for that field.
+To add this to a relationship model, a 3rd field is added eg ID, in which links
+this key table to another table>
+
+Entity = Table: Is an object (person,place,thing) with a group of attributes (characteristics). An entity can
+have different instances (rows). Each attribute stores data.
+
+A schema: A conceptual organisation of the view of the entire database, the way in which the database admin would see it.
+Relationships: The connection between to entites. THis can be 1:1, 1:*, *:*.
+eg A car has mnay tyres, A car has one engine, Many cars are owned by many people.
+
+Entity integrity: Refers to the integrity of an entity(table), in particular that each record of an entity
+has a primary key, which is not null and is unique.
+referential integrity: Refers to relationship integrity, in particular foreign keys. A foreign key in one table, is a primary key in another table.
+The foreign key must have a value, if there is a corresponding value in the related table, or be null if not.
+
+Logical dependence: when a change in the internal model, will effect the conceptual model.
+physical dependenceL when a change in the physical model, will effect the logical model.
+data dependence: when a change in the data storage characteristic, will effect the application program.
+
+External model <--- End User
+
+Conceptual model <---As viewed by DB admin
+
+--------logical independence
+
+internal model  <-- As viewed by DBMS
+
+---------physical independence
+
+physical model  
+
+
+External model: hadrware and software independence.
+THe interface that the user sees.
+Does not have access to any sql code.
+
+Conceptual model: hardware and software independence.
+Where ERD is defined : relationships, entities, attributes ect.
+Normalisation takes place.
+
+
+Internal model: Maps the conceptual model to the dbms system.
+Is software dependent.
+Actual implementation/creation of the tables, attributes, data, relationships
+Select where ect. sql code
+
+Physcial model: software and hardware dependent.
+This is where the physical storage medium is defined.
+THe security procedures for keeping data integrity.
+
+Data Security is: Confidential, integrity, Accessible
+Confidentiality is when private data is viewed by unauthorised personal eg bank passwords
+Integrity is how correct data is eg SOmeone changes values randomly, this data cannot be trusted anymore.
+Accessible, when some type of attack occurs which makes no one able to access the data
+
+
+corrective: Maintanance in response to errors
+adaptive :Maintanance in repsonse to a change in the business environment/
+Perfective: Maintanance to make more efficient and effective
+
+
+Testing:
+
+
+
+
+

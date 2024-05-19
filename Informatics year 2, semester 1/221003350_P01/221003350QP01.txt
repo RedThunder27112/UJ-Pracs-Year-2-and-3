@@ -1,0 +1,10 @@
+Q1)
+No
+
+Q2)
+There is no Information regarding whether the student is allowed to park on campus. Which is the whole point of the table.
+Also, there is no information regarding if the student has access (ie Has uplaoded Vaccine Certificate or Exemption).
+
+
+Q3)
+Creating a "Has Access To Campass Parking" (Boolean) and "Has uploaded Vacc Certificate or Exempted" Headings to the table.

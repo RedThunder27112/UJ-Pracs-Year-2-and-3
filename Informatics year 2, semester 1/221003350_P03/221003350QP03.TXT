@@ -1,0 +1,13 @@
+1)
+No
+
+2)
+The table still has no information regarding whether or not
+the student has uploaded their vaccine certificate, are excempted, or
+are allowed to park on campus.
+
+3)
+Adding a boolean "Uploaded Vaccine Certificate", Boolean "Exempted"
+and Boolean "Can Park on campus" Headings to the Access Person table.
+In addition, a querry checking whether 1 of 2 of the first statments are true,
+and the third statement is true, to gain access.
