@@ -1,0 +1,4 @@
+LIBRARY P09
+EXPORTS min
+EXPORTS max
+EXPORTS normalise

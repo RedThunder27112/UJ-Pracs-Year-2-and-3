@@ -1,0 +1,470 @@
+Microsoft (R) Macro Assembler Version 6.11		    08/24/23 16:28:32
+src\P05.asm						     Page 1 - 1
+
+
+				;	Author:     221003350 Ariel Sischy
+				;	Computer Science 3B - P0X
+				.386
+				.MODEL FLAT ; Flat memory model
+				.STACK 4096 ; 4096 bytes
+
+				INCLUDE io.inc ; Directive to use the IO Library
+			      C ;
+			      C ; Simple I/O Routines - Version 2
+			      C ;
+			      C 
+			      C IFNDEF IO_INC
+ = 1			      C IO_INC equ <1>
+			      C 
+			      C OutputStr PROTO NEAR32 STDCALL :DWORD
+			      C OutputInt PROTO NEAR32 STDCALL :DWORD
+			      C OutputFloat PROTO NEAR32 STDCALL :DWORD
+			      C OutputFloat8 PROTO NEAR32 STDCALL :QWORD
+			      C InputInt PROTO NEAR32 STDCALL
+			      C InputStr PROTO NEAR32 STDCALL :DWORD, :DWORD
+			      C 
+			      C ELSE
+			      C ENDIF
+			      C 
+
+
+				; Exit function
+				ExitProcess PROTO NEAR32 stdcall, dwExitCode:DWORD
+
+				; The data section stores all global variables
+ 00000000			.DATA
+
+				;;array
+ 00000000  0000000A [		array DWORD 10 DUP (?)
+	    00000000
+	   ]
+
+				;display messages
+ 00000028 44 69 73 70 6C	msgDisplay BYTE "Displaying Array:",10,0
+	   61 79 69 6E 67
+	   20 41 72 72 61
+	   79 3A 0A 00
+ 0000003B 45 6E 74 65 72	msgInput BYTE "Entering Values Into Array:",10,0
+	   69 6E 67 20 56
+	   61 6C 75 65 73
+	   20 49 6E 74 6F
+	   20 41 72 72 61
+	   79 3A 0A 00
+ 00000058 50 6C 65 61 73	msgInputValue BYTE "Please Enter Array Value: ",0
+	   65 20 45 6E 74
+	   65 72 20 41 72
+	   72 61 79 20 56
+	   61 6C 75 65 3A
+	   20 00
+ 00000073 4E 6F 77 20 43	msgAverage BYTE "Now Calulating Average: ",10,0
+	   61 6C 75 6C 61
+	   74 69 6E 67 20
+	   41 76 65 72 61
+	   67 65 3A 20 0A
+	   00
+ 0000008D 4E 6F 77 20 44	msgDivide BYTE "Now Dividing Array:",10,0
+	   69 76 69 64 69
+	   6E 67 20 41 72
+	   72 61 79 3A 0A
+	   00
+
+ 000000A2 4E 6F 77 20 43	msgClamp BYTE "Now Calculating Clamp:",10,0
+	   61 6C 63 75 6C
+	   61 74 69 6E 67
+	   20 43 6C 61 6D
+	   70 3A 0A 00
+ 000000BA 45 6E 74 65 72	msgInputClamp BYTE "Enter Clamp Value:",0
+	   20 43 6C 61 6D
+	   70 20 56 61 6C
+	   75 65 3A 00
+
+ 000000CD 45 6E 74 65 72	msgExit BYTE "Enter 0 to exit, 1 to continue: ",0
+	   20 30 20 74 6F
+	   20 65 78 69 74
+	   2C 20 31 20 74
+	   6F 20 63 6F 6E
+	   74 69 6E 75 65
+	   3A 20 00
+
+				;display format messages
+ 000000EE 2C 20 00		msgSpace BYTE ", ",0
+ 000000F1 20 0A 00		msgLine BYTE " ",10,0
+
+
+ 00000000			.CODE
+
+ 00000000			_displayFunc PROC NEAR32 ;display array function 
+					;BLOCK ENTRY
+					;CREATE stack to add eax-edx to
+ 00000000  55				PUSH ebp
+ 00000001  8B EC			MOV ebp,esp
+ 00000003  52				PUSH edx
+ 00000004  51				PUSH ecx
+ 00000005  53				PUSH ebx
+ 00000006  50				PUSH eax
+ 00000007  9C				PUSHFD ; save flags register
+
+					;BLOCK function body
+
+					;while loop to display 10 items in array
+					INVOKE OutputStr, ADDR msgLine ;line format
+					INVOKE OutputStr, ADDR msgDisplay ;display message
+ 0000001C  B9 0000000A			MOV ecx, 10 ; set ecx to 10
+ 00000021  8D 1D 00000000 R		LEA ebx, array ;set array memory address
+
+ 00000027				whileDisplayCondition:
+ 00000027  83 F9 00			CMP ecx, 0 ;check if ecx is 0
+ 0000002A  74 17			JZ whileDisplayEnd
+ 0000002C				whileDisplayBody:
+
+					INVOKE OutputInt, [ebx]
+
+ 00000033  83 C3 04			ADD ebx, 4 ; go to next array slot
+ 00000036  49				DEC ecx ;ecx -1
+
+					INVOKE OutputStr, ADDR msgSpace ;add format space
+ 00000041  EB E4			JMP whileDisplayCondition ; jump to while condition check
+ 00000043				whileDisplayEnd:
+
+					;BLOCK exit
+					;RESTORE eax-edx flags to before values
+ 00000043  9D				POPFD
+ 00000044  58				POP eax
+ 00000045  5B				POP ebx
+ 00000046  59				POP ecx
+ 00000047  5A				POP edx
+ 00000048  8B E5			MOV esp, ebp ;destroy stack
+ 0000004A  5D				POP ebp
+ 0000004B  C3				RET 	;return call function
+
+ 0000004C			_displayFunc ENDP
+
+
+ 0000004C			_inputFunc PROC NEAR32 ;display array function 
+					;BLOCK ENTRY
+					;CREATE stack to add eax-edx to
+ 0000004C  55				PUSH ebp
+ 0000004D  8B EC			MOV ebp,esp
+ 0000004F  52				PUSH edx
+ 00000050  51				PUSH ecx
+ 00000051  53				PUSH ebx
+ 00000052  50				PUSH eax
+ 00000053  9C				PUSHFD ; save flags register
+
+					;BLOCK function body
+
+					;while loop to display 10 items in array
+					INVOKE OutputStr, ADDR msgLine ;line format
+					INVOKE OutputStr, ADDR msgInput ;display message
+ 00000068  B9 0000000A			MOV ecx, 10 ; set ecx to 10
+ 0000006D  8D 1D 00000000 R		LEA ebx, array ;set array memory address
+
+ 00000073				whileInputCondition:
+ 00000073  83 F9 00			CMP ecx, 0 ;check if ecx is 0
+					;INVOKE OutputStr, ADDR msgSpace ;add format space
+ 00000076  74 17			JZ whileInputEnd
+ 00000078				whileInputBody:
+
+					INVOKE OutputStr, ADDR msgInputValue
+					INVOKE InputInt
+ 00000087  89 03			MOV [ebx], eax
+
+ 00000089  83 C3 04			ADD ebx, 4 ; go to next array slot
+ 0000008C  49				DEC ecx ;ecx -1
+
+ 0000008D  EB E4			JMP whileInputCondition ; jump to while condition check
+ 0000008F				whileInputEnd:
+
+					;BLOCK exit
+					;RESTORE eax-edx flags to before values
+ 0000008F  9D				POPFD
+ 00000090  58				POP eax
+ 00000091  5B				POP ebx
+ 00000092  59				POP ecx
+ 00000093  5A				POP edx
+ 00000094  8B E5			MOV esp, ebp ;destroy stack
+ 00000096  5D				POP ebp
+ 00000097  C3				RET 	;return call function
+
+ 00000098			_inputFunc ENDP
+
+ 00000098			_averageFunc PROC NEAR32 ;display array function 
+					;BLOCK ENTRY
+					;CREATE stack to add eax-edx to
+ 00000098  55				PUSH ebp
+ 00000099  8B EC			MOV ebp,esp
+ 0000009B  52				PUSH edx
+ 0000009C  51				PUSH ecx
+ 0000009D  53				PUSH ebx
+ 0000009E  9C				PUSHFD ; save flags register
+
+					;BLOCK function body
+
+					;while loop to display 10 items in array
+					INVOKE OutputStr, ADDR msgLine ;line format
+					INVOKE OutputStr, ADDR msgLine ;line format
+					INVOKE OutputStr, ADDR msgAverage ;display message
+ 000000BD  B9 0000000A			MOV ecx, 10 ; set ecx to 10
+ 000000C2  8D 1D 00000000 R		LEA ebx, array ;set array memory address
+ 000000C8  B8 00000000			MOV eax, 0
+ 000000CD				whileAverageCondition:
+ 000000CD  83 F9 00			CMP ecx, 0 ;check if ecx is 0
+					;INVOKE OutputStr, ADDR msgSpace ;add format space
+ 000000D0  74 08			JZ whileAverageEnd
+ 000000D2				whileAverageBody:
+
+ 000000D2  03 03			ADD eax, [ebx] ; add array to eax
+
+ 000000D4  83 C3 04			ADD ebx, 4 ; go to next array slot
+ 000000D7  49				DEC ecx ;ecx -1
+
+ 000000D8  EB F3			JMP whileAverageCondition ; jump to while condition check
+ 000000DA				whileAverageEnd:
+
+ 000000DA  99				cdq ; prepare divisor
+ 000000DB  BB 0000000A			MOV ebx, 10 
+ 000000E0  F7 FB			IDIV ebx ; divde sum by 10
+
+					;BLOCK exit
+					;RESTORE eax-edx flags to before values
+ 000000E2  9D				POPFD
+ 000000E3  5B				POP ebx
+ 000000E4  59				POP ecx
+ 000000E5  5A				POP edx
+ 000000E6  8B E5			MOV esp, ebp ;destroy stack
+ 000000E8  5D				POP ebp
+ 000000E9  C3				RET 	;return call function
+
+ 000000EA			_averageFunc ENDP
+
+ 000000EA			_divideFunc PROC NEAR32 ;display array function 
+					;BLOCK ENTRY
+					;CREATE stack to add eax-edx to
+ 000000EA  55				PUSH ebp
+ 000000EB  8B EC			MOV ebp,esp
+ 000000ED  52				PUSH edx
+ 000000EE  51				PUSH ecx
+ 000000EF  53				PUSH ebx
+ 000000F0  50				PUSH eax
+ 000000F1  9C				PUSHFD ; save flags register
+
+					;BLOCK function body
+
+					;while loop to display 10 items in array
+					INVOKE OutputStr, ADDR msgLine ;line format
+					INVOKE OutputStr, ADDR msgDivide ;display message
+ 00000106  B9 0000000A			MOV ecx, 10 ; set ecx to 10
+ 0000010B  8D 1D 00000000 R		LEA ebx, array ;set array memory address
+
+ 00000111				whileDivideCondition:
+ 00000111  83 F9 00			CMP ecx, 0 ;check if ecx is 0
+					;INVOKE OutputStr, ADDR msgSpace ;add format space
+ 00000114  74 16			JZ whileDivideEnd
+ 00000116				whileDivideBody:
+
+ 00000116  89 4D 0C			MOV [ebp+12], ecx
+ 00000119  8B 4D 08			MOV ecx, [ebp+8]
+
+ 0000011C  8B 03			MOV eax, [ebx] ;move array value to eax
+
+
+ 0000011E  99				cdq ;prepare for division
+ 0000011F  F7 F9			IDIV ecx
+
+ 00000121  8B 4D 0C			MOV ecx, [ebp+12]
+
+ 00000124  89 03			MOV [ebx], eax ; move divison result to array
+
+ 00000126  83 C3 04			ADD ebx, 4 ; go to next array slot
+ 00000129  49				DEC ecx ;ecx -1
+
+ 0000012A  EB E5			JMP whileDivideCondition ; jump to while condition check
+ 0000012C				whileDivideEnd:
+
+					;BLOCK exit
+					;RESTORE eax-edx flags to before values
+ 0000012C  9D				POPFD
+ 0000012D  58				POP eax
+ 0000012E  5B				POP ebx
+ 0000012F  59				POP ecx
+ 00000130  5A				POP edx
+ 00000131  8B E5			MOV esp, ebp ;destroy stack
+ 00000133  5D				POP ebp
+ 00000134  C3				RET 	;return call function
+
+ 00000135			_divideFunc ENDP
+
+
+ 00000135			_clampFunc PROC NEAR32 ;display array function 
+					;BLOCK ENTRY
+					;CREATE stack to add eax-edx to
+ 00000135  55				PUSH ebp
+ 00000136  8B EC			MOV ebp,esp
+ 00000138  52				PUSH edx
+ 00000139  51				PUSH ecx
+ 0000013A  53				PUSH ebx
+ 0000013B  50				PUSH eax
+ 0000013C  9C				PUSHFD ; save flags register
+
+					;BLOCK function body
+
+					;while loop to display 10 items in array
+					INVOKE OutputStr, ADDR msgLine ;line format
+					INVOKE OutputStr, ADDR msgLine ;line format
+					INVOKE OutputStr, ADDR msgClamp ;display message
+					INVOKE OutputStr, ADDR msgInputClamp ;display message
+					INVOKE InputInt
+
+ 0000016A  B9 0000000A			MOV ecx, 10 ; set ecx to 10
+ 0000016F  8D 1D 00000000 R		LEA ebx, array ;set array memory address
+
+ 00000175				whileClampCondition:
+ 00000175  83 F9 00			CMP ecx, 0 ;check if ecx is 0
+					;INVOKE OutputStr, ADDR msgSpace ;add format space
+ 00000178  74 0E			JZ whileClampEnd
+ 0000017A				whileClampBody:
+
+ 0000017A  39 03			CMP [ebx], eax ; if eax >= ebp
+ 0000017C  7D 02			JGE setClamp
+ 0000017E  EB 02			JMP setClampEnd; else skip
+ 00000180				setClamp:
+ 00000180  89 03			MOV [ebx], eax
+ 00000182				setClampEnd:
+
+ 00000182  83 C3 04			ADD ebx, 4 ; go to next array slot
+ 00000185  49				DEC ecx ;ecx -1
+
+ 00000186  EB ED			JMP whileClampCondition ; jump to while condition check
+ 00000188				whileClampEnd:
+
+					;BLOCK exit
+					;RESTORE eax-edx flags to before values
+ 00000188  9D				POPFD
+ 00000189  58				POP eax
+ 0000018A  5B				POP ebx
+ 0000018B  59				POP ecx
+ 0000018C  5A				POP edx
+ 0000018D  8B E5			MOV esp, ebp ;destroy stack
+ 0000018F  5D				POP ebp
+ 00000190  C3				RET 	;return call function
+
+ 00000191			_clampFunc ENDP
+
+ 00000191			_start:
+ 00000191
+ 00000191  B9 00000001			MOV ecx, 1
+ 00000196				whileCondition:
+ 00000196  83 F9 00			CMP ecx, 0
+ 00000199  74 47			JZ whileEnd
+ 0000019B				whileBody:
+ 0000019B  E8 FFFFFEAC			CALL _inputFunc
+ 000001A0  E8 FFFFFE5B			CALL _displayFunc
+ 000001A5  E8 FFFFFEEE			CALL _averageFunc ;returns average in eax
+
+ 000001AA  55				PUSH ebp 
+ 000001AB  8B EC			MOV ebp, esp
+ 000001AD  83 EC 08			SUB esp, 8
+ 000001B0  50				PUSH eax
+ 000001B1  E8 FFFFFF34			CALL _divideFunc
+ 000001B6  E8 FFFFFE45			CALL _displayFunc
+ 000001BB  E8 FFFFFF75			CALL _clampFunc
+ 000001C0  E8 FFFFFE3B			CALL _displayFunc
+
+					INVOKE OutputStr, ADDR msgLine
+					INVOKE OutputStr, ADDR msgExit ;ask user for if they want to exit program
+					INVOKE InputInt
+ 000001DE  8B C8			MOV ecx, eax
+
+ 000001E0  EB B4			JMP whileCondition
+ 000001E2				whileEnd:
+					; We call the Operating System ExitProcess system call to close the process.
+					INVOKE ExitProcess, 0
+ 000001E9			Public _start
+				END
+Microsoft (R) Macro Assembler Version 6.11		    08/24/23 16:28:32
+src\P05.asm						     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+FLAT . . . . . . . . . . . . . .	GROUP
+STACK  . . . . . . . . . . . . .	32 Bit	 00001000 DWord	  Stack	  'STACK'	 
+_DATA  . . . . . . . . . . . . .	32 Bit	 000000F4 DWord	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 000001E9 DWord	  Public  'CODE'	
+
+
+Procedures,  parameters and locals:
+
+                N a m e                 Type     Value    Attr
+
+$$$$$$00006  . . . . . . . . . .	P Near	 00000191 _TEXT	Length= 00000058 Private
+  whileCondition . . . . . . . .	L Near	 00000196 _TEXT	
+  whileBody  . . . . . . . . . .	L Near	 0000019B _TEXT	
+  whileEnd . . . . . . . . . . .	L Near	 000001E2 _TEXT	
+ExitProcess  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+InputInt . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+InputStr . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+OutputFloat8 . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+OutputFloat  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+OutputInt  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+OutputStr  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+_averageFunc . . . . . . . . . .	P Near	 00000098 _TEXT	Length= 00000052 Public
+  whileAverageCondition  . . . .	L Near	 000000CD _TEXT	
+  whileAverageBody . . . . . . .	L Near	 000000D2 _TEXT	
+  whileAverageEnd  . . . . . . .	L Near	 000000DA _TEXT	
+_clampFunc . . . . . . . . . . .	P Near	 00000135 _TEXT	Length= 0000005C Public
+  whileClampCondition  . . . . .	L Near	 00000175 _TEXT	
+  whileClampBody . . . . . . . .	L Near	 0000017A _TEXT	
+  setClamp . . . . . . . . . . .	L Near	 00000180 _TEXT	
+  setClampEnd  . . . . . . . . .	L Near	 00000182 _TEXT	
+  whileClampEnd  . . . . . . . .	L Near	 00000188 _TEXT	
+_displayFunc . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 0000004C Public
+  whileDisplayCondition  . . . .	L Near	 00000027 _TEXT	
+  whileDisplayBody . . . . . . .	L Near	 0000002C _TEXT	
+  whileDisplayEnd  . . . . . . .	L Near	 00000043 _TEXT	
+_divideFunc  . . . . . . . . . .	P Near	 000000EA _TEXT	Length= 0000004B Public
+  whileDivideCondition . . . . .	L Near	 00000111 _TEXT	
+  whileDivideBody  . . . . . . .	L Near	 00000116 _TEXT	
+  whileDivideEnd . . . . . . . .	L Near	 0000012C _TEXT	
+_inputFunc . . . . . . . . . . .	P Near	 0000004C _TEXT	Length= 0000004C Public
+  whileInputCondition  . . . . .	L Near	 00000073 _TEXT	
+  whileInputBody . . . . . . . .	L Near	 00000078 _TEXT	
+  whileInputEnd  . . . . . . . .	L Near	 0000008F _TEXT	
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+@CodeSize  . . . . . . . . . . .	Number	 00000000h   
+@DataSize  . . . . . . . . . . .	Number	 00000000h   
+@Interface . . . . . . . . . . .	Number	 00000000h   
+@Model . . . . . . . . . . . . .	Number	 00000007h   
+@code  . . . . . . . . . . . . .	Text   	 _TEXT
+@data  . . . . . . . . . . . . .	Text   	 FLAT
+@fardata?  . . . . . . . . . . .	Text   	 FLAT
+@fardata . . . . . . . . . . . .	Text   	 FLAT
+@stack . . . . . . . . . . . . .	Text   	 FLAT
+IO_INC . . . . . . . . . . . . .	Text   	 1
+_start . . . . . . . . . . . . .	L Near	 00000191 _TEXT	Public
+array  . . . . . . . . . . . . .	DWord	 00000000 _DATA	
+msgAverage . . . . . . . . . . .	Byte	 00000073 _DATA	
+msgClamp . . . . . . . . . . . .	Byte	 000000A2 _DATA	
+msgDisplay . . . . . . . . . . .	Byte	 00000028 _DATA	
+msgDivide  . . . . . . . . . . .	Byte	 0000008D _DATA	
+msgExit  . . . . . . . . . . . .	Byte	 000000CD _DATA	
+msgInputClamp  . . . . . . . . .	Byte	 000000BA _DATA	
+msgInputValue  . . . . . . . . .	Byte	 00000058 _DATA	
+msgInput . . . . . . . . . . . .	Byte	 0000003B _DATA	
+msgLine  . . . . . . . . . . . .	Byte	 000000F1 _DATA	
+msgSpace . . . . . . . . . . . .	Byte	 000000EE _DATA	
+whileBody  . . . . . . . . . . .	L Near	 0000019B _TEXT	
+whileCondition . . . . . . . . .	L Near	 00000196 _TEXT	
+whileEnd . . . . . . . . . . . .	L Near	 000001E2 _TEXT	
+
+	   0 Warnings
+	   0 Errors

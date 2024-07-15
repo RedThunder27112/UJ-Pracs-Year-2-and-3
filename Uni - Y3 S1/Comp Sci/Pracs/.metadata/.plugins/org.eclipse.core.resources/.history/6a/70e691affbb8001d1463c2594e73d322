@@ -1,0 +1,391 @@
+
+public class DList<T extends Comparable<T>> implements IList<T>, Cloneable {
+
+	private Node<T> header = null;//prev
+	private Node<T> trailer = null;//next
+	private Integer size = 0;
+	
+	/**
+	 * Default constructor
+	 * parameters to Node constructor (next, prev, element)
+	 */
+	public DList() 
+	{
+		trailer = new Node<T>(null, null, null);
+		header = new Node<T>(trailer, null, null);
+		trailer.setPrev(header);
+		size = 2;
+	}
+	
+	
+	/**
+	 * Returns first node in the list
+	 */
+	public Node<T> first(){
+		return header;
+		}
+	
+	/**
+	 * Returns last node in the list
+	 */
+	public Node<T> last(){
+	return trailer;
+	}
+	
+	
+	/**
+	 * Construct a List from an Array
+	 * @param fromArray the array used to construct the list
+	 */
+	public DList(T[] fromArray) 
+	{
+		//if list only has 1 or less element, return
+		if(fromArray.length <= 1)
+		{
+			return;
+		}
+		
+		//create first and last element in array
+		trailer = new Node<T>(null, null, fromArray[fromArray.length-1]);//tail
+		header = new Node<T>(trailer, null, fromArray[0]);//head
+		trailer.setPrev(header);
+		size = 2;
+		
+
+		//get first node
+		Node<T> tempNode = first();
+		//now add rest of elements using addafter method
+		for(int i = 1; i < fromArray.length-2; i++)
+		{
+			//calls a method to creates a new node after the first node
+			//then reassigns that first node to be the new node
+			tempNode = addAfter(tempNode, fromArray[i]);
+		}
+
+	}
+	
+	/**
+	 * Convert the list to an array.
+	 */
+	public T[] toArray() 
+	{
+		//create array
+		T[] array = (T[]) new Object[size];
+		//get first node
+		Node<T> tempNode = first();
+		
+		for(int i = 0; i < size; i++)
+		{
+			//assigns element to array
+			array[i] = tempNode.getElement();
+			//then changes node to next node
+			tempNode = tempNode.getNext();
+		}
+		return array;
+
+	}
+	
+	/**
+	 * Provide a deep copy of the Linked List
+	 */
+	@Override
+	public DList<T> clone() 
+	{
+		//gets array from other List
+		DList<T> newDList = new DList<T>(toArray());
+		return newDList;
+		
+	}
+	
+	/**
+	 * Add an element after a given node in the list
+	 */
+	@Override
+	public Node<T> addAfter(Node<T> elem, T item) 
+	{
+		
+		size++;
+		
+		//check if elem is the tail
+		if(elem.equals(last()))
+		{
+			//if so, make new ndoe trailer and make trailer not one anymore
+			Node<T> newNode = new Node<T>(null, elem, item);//next, prev, element
+			elem.setNext(newNode);
+			trailer = newNode;
+			return newNode;
+		}
+		//get prev node
+		Node<T> nextNode = elem.getNext();
+		//create new element
+		Node<T> newNode = new Node<T>(nextNode, elem, item);//next, prev, element
+
+		//now repoint the next and prev nodes to the new node
+		nextNode.setPrev(newNode);
+		elem.setNext(newNode);
+
+		return newNode;
+	}
+
+	/**
+	 * Add an element before a given node in a list
+	 */
+	@Override
+	public Node<T> addBefore(Node<T> elem, T item) 
+	{
+		size++;
+		
+		//check if elem is the header
+		if(elem.equals(first()))
+		{
+			//if so, make new ndoe trailer and make trailer not one anymore
+			Node<T> newNode = new Node<T>(elem, null, item);//next, prev, element
+			elem.setPrev(newNode);
+			header = newNode;
+			return newNode;
+		}
+		
+		//get prev node
+		Node<T> prevNode = elem.getPrev();
+		//create new element
+		Node<T> newNode = new Node<T>(elem, prevNode, item);//next, prev, element
+
+		//now repoint the next and prev nodes to the new node
+		elem.setPrev(newNode);
+		prevNode.setNext(newNode);
+
+		return newNode;
+	}
+
+	/**
+	 * Add an element to the start of the list
+	 */
+	public Node<T> addFirst(T item) {
+		return addAfter(header, item);
+	}
+	
+	/**
+	 * Add an element to the end of the list
+	 */
+	public Node<T> addLast(T item) {
+		return addBefore(trailer, item);
+	}
+	
+	/**
+	 * Remove a specified node from the list. The removed element is returned
+	 */
+	@Override
+	public T remove(Node<T> elem) 
+	{
+		size--;
+		//store to be deleted element for returning
+		T element = elem.getElement();
+		
+		//check if header or tail
+		if(elem.equals(first()))
+		{
+			//get next node
+
+			Node<T> next = elem.getNext();
+			//set  and next nodes pointers
+			next.setPrev(null);
+			header = next;
+
+			//delete node
+			elem.setElement(null);
+			elem.setNext(null);
+			
+			return element;
+			
+			
+		}else
+		if(elem.equals(last()))
+		{
+			//get prev  node
+			Node<T> prev = elem.getPrev();
+
+			//set prev nodes pointers
+			prev.setNext(null);
+			trailer = prev;
+
+			//delete node
+			elem.setElement(null);
+			elem.setPrev(null);
+			
+			return element;
+		}
+		
+		//get prev and next node
+		Node<T> prev = elem.getPrev();
+		Node<T> next = elem.getNext();
+		//set prev and next nodes pointers
+		prev.setNext(next);
+		next.setPrev(prev);
+
+		//delete node
+		elem.setElement(null);
+		elem.setNext(null);
+		elem.setPrev(null);
+		
+		return element;
+
+	}
+
+	/**
+	 * Returns the node that contains the element that is specified as a parameter
+	 */
+	@Override
+	public Node<T> search(T elem) 
+	{
+		//search array for element
+		Node<T> tempNode = first();
+		//first node is not initialised with a value, so skip it
+		tempNode = tempNode.getNext();
+		for(int i = 1; i < size; i++)
+		{
+			//check if current node is the one with the element
+		
+			if(tempNode.getElement().equals(elem))
+			{
+				return tempNode;
+			}
+
+			//then changes node to next node
+			tempNode = tempNode.getNext();
+		}
+		//no node found
+		return null;
+
+	}
+
+	/**
+	 * Returns true if the list is empty
+	 */
+	@Override
+	public boolean isEmpty() {
+		return (header.getNext() == trailer);
+	}
+
+	/**
+	 * Return the size of the list
+	 */
+	@Override
+	public Integer size() {
+		return size;
+	}
+	
+		/**
+	 * Return the first element in the list
+	 */
+	public T head() {
+		return header.getNext().getElement();
+	}
+	
+	/**
+	 * Returns a list that contains everything except the first element
+	 */
+	public IList<T> tail() 
+	{
+
+		//remove first element
+		DList<T> tailList = (DList<T>) remove(first());
+		
+		return tailList;
+		//COMPLETE CODE HERE
+	}
+	
+	
+	@Override
+	public String toString() {
+		
+		String result = header.getElement() +" (" + header.toString() + ") <-> ";
+		Node<T> currentNode = header.getNext();
+		
+		//run through all nodes between header and tail and add to result
+		for(int i = 1; i < size-2; i++)
+		{
+			result += currentNode.getElement() +" (" + currentNode.toString() + ") <-> ";
+			currentNode = currentNode.getNext();
+		}
+		
+		result += trailer.getElement() +" (" + trailer.toString() + ")";
+		return result;
+		
+		/*
+		String result = header.toString() + " <-> ";
+		Node<T> currentNode = header.getNext();
+		
+		//run through all nodes between header and tail and add to result
+		for(int i = 1; i < size-2; i++)
+		{
+			result += currentNode.toString() + " <-> ";
+			currentNode = currentNode.getNext();
+		}
+		
+		result += trailer.toString();
+		return result;*/
+	}
+	
+	/**
+	 * Return a new list that contains all the element in the current list
+	 * that are less than a specified element
+	 */
+	public DList<T> splitLess(T element) 
+	{
+		return null;
+		//COMPLETE CODE HERE
+	}
+	
+	/**
+	 * Return a new list that contains all the element in the current list
+	 * that are greater than a specified element
+	 */
+	public DList<T> splitGreater(T element) 
+	{
+		return null;
+		//COMPLETE CODE HERE
+	}
+	
+	/**
+	 * Return a new list that contains all the element in the current list
+	 * that are equal to the specified element
+	 */
+	public DList<T> splitEqual(T element) 
+	{
+		return null;
+		//COMPLETE CODE HERE
+	}
+	
+	/**
+	 * Return a new IList that contains the elements merged from the current list
+	 * and the passed otherList
+	 * @param otherList the other list to merge
+	 * @return a new list of element
+	 */
+	public DList<T> merge(DList<T> otherList) {
+		DList<T> newList = new DList<T>();
+		Node<T> currentNode = header.getNext();
+		Node<T> currentNode2 = otherList.header.getNext();
+		
+		//COMPLETE CODE HERE
+		
+		return newList;
+	}
+	
+	/**
+	 * Return a new list that has been sorted using a quick sort.
+	 * @return a sorted list
+	 */
+	public DList<T> quicksort() {
+		if (size() <= 1)
+			return this.clone();
+		
+		//COMPLETE CODE HERE	
+		return null;
+		//merge everything together
+		
+		//DList<T> sortedList = smaller.merge(equal).merge(greater);
+		//return sortedList;
+	}
+	
+}

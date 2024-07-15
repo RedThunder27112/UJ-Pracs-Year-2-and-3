@@ -1,0 +1,351 @@
+Microsoft (R) Macro Assembler Version 6.11		    10/12/23 16:08:38
+src\.\P09DLL.asm					     Page 1 - 1
+
+
+				;	Author:     221003350 Ariel Sischy
+				;	Computer Science 3B - P09
+				.386
+				.MODEL FLAT, stdcall
+				.STACK 4096
+
+				INCLUDE io.inc ; Directive to use the IO Library
+			      C ;
+			      C ; Simple I/O Routines - Version 2
+			      C ;
+			      C 
+			      C IFNDEF IO_INC
+ = 1			      C IO_INC equ <1>
+			      C 
+			      C OutputStr PROTO NEAR32 STDCALL :DWORD
+			      C OutputInt PROTO NEAR32 STDCALL :DWORD
+			      C OutputFloat PROTO NEAR32 STDCALL :DWORD
+			      C OutputFloat8 PROTO NEAR32 STDCALL :QWORD
+			      C InputInt PROTO NEAR32 STDCALL
+			      C InputStr PROTO NEAR32 STDCALL :DWORD, :DWORD
+			      C 
+			      C ELSE
+			      C ENDIF
+			      C 
+
+ 00000000			.CODE
+
+				; LibMain function tests which action is currently beign performed
+				; The function returns if the DLL is loaded correctly or not.
+				; We avoid the complex logic here for simplicity.
+ 00000000			LibMain proc instance:DWORD, reason:DWORD, unused:DWORD
+ 00000003  B8 00000001			mov eax, 1
+				  ret
+ 0000000C			LibMain ENDP
+
+ 0000000C			min PROC NEAR32
+					; Entry code
+ 0000000C  55				PUSH	ebp
+ 0000000D  8B EC			MOV		ebp, esp
+ 0000000F  83 EC 04			SUB esp, 4
+ 00000012  53				PUSH	ebx
+ 00000013  51				PUSH	ecx
+ 00000014  52				PUSH	edx
+ 00000015  9C				PUSHFD
+
+					;ebp+12 = size
+					;ebp+8 = array
+					;INITIALISE values for loop
+ 00000016  8B 5D 08			MOV ebx, [ebp+8]
+ 00000019  8B 4D 0C			MOV ecx, [ebp+12]
+ 0000001C  8B 03			MOV eax, [ebx]
+ 0000001E  89 45 FC			MOV [ebp-4], eax  
+ 00000021  B8 00000000			MOV eax, 0
+
+					;eg3
+ 00000026  49				DEC ecx ; as if there is 3 arrays, you want it to run twice
+					
+
+					
+ 00000027				startLoop:
+
+
+ 00000027  83 C3 04			ADD ebx, 4 ;next array number
+
+ 0000002A  8B 03			MOV eax, [ebx]
+ 0000002C  39 45 FC			CMP [ebp-4], eax ; if ([ebp-4] > eax)
+ 0000002F  7F 02			JG newMin
+ 00000031  EB 05			JMP noMin
+
+ 00000033				newMin:;if there is a new min, set it
+ 00000033  8B 03			MOV eax, [ebx]
+ 00000035  89 45 FC			MOV [ebp-4], eax
+ 00000038				noMin:
+
+ 00000038  E2 ED			LOOP startLoop
+
+ 0000003A  8B 45 FC			MOV	eax, [ebp-4];return value
+
+					; Exit code
+ 0000003D  9D				POPFD
+ 0000003E  5A				POP		edx
+ 0000003F  59				POP		ecx
+ 00000040  5B				POP		ebx
+ 00000041  8B E5			MOV		esp, ebp
+ 00000043  5D				POP		ebp
+ 00000044  C2 0008			RET		8					; params are X bytes
+ 00000047			min ENDP
+
+ 00000047			max PROC NEAR32
+					; Entry code
+ 00000047  55				PUSH	ebp
+ 00000048  8B EC			MOV		ebp, esp
+ 0000004A  83 EC 04			SUB esp, 4
+ 0000004D  53				PUSH	ebx
+ 0000004E  51				PUSH	ecx
+ 0000004F  52				PUSH	edx
+ 00000050  9C				PUSHFD
+
+					;ebp+12 = size
+					;ebp+8 = array
+					;INITIALISE values for loop
+ 00000051  8B 5D 08			MOV ebx, [ebp+8]
+ 00000054  8B 4D 0C			MOV ecx, [ebp+12]
+ 00000057  8B 03			MOV eax, [ebx]
+ 00000059  89 45 FC			MOV [ebp-4], eax  
+ 0000005C  B8 00000000			MOV eax, 0
+
+					;eg3
+ 00000061  49				DEC ecx ; as if there is 3 arrays, you want it to run twice
+
+
+					
+ 00000062				startLoop:
+
+ 00000062  83 C3 04			ADD ebx, 4 ;next array number
+
+ 00000065  8B 03			MOV eax, [ebx]
+ 00000067  3B 45 FC			CMP eax, [ebp-4] 
+ 0000006A  7F 02			JG newMax
+ 0000006C  EB 05			JMP noMax
+
+ 0000006E				newMax:;if there is a new max, set it
+ 0000006E  8B 03			MOV eax, [ebx]
+ 00000070  89 45 FC			MOV [ebp-4], eax
+ 00000073				noMax:
+
+ 00000073  E2 ED			LOOP startLoop
+
+ 00000075  8B 45 FC			MOV	eax, [ebp-4];return value
+
+					; Exit code
+ 00000078  9D				POPFD
+ 00000079  5A				POP		edx
+ 0000007A  59				POP		ecx
+ 0000007B  5B				POP		ebx
+ 0000007C  8B E5			MOV		esp, ebp
+ 0000007E  5D				POP		ebp
+ 0000007F  C2 0008			RET		8					; params are X bytes
+ 00000082			max ENDP
+
+ 00000082			normalise PROC NEAR32
+					; Entry code
+ 00000082  55				PUSH	ebp
+ 00000083  8B EC			MOV		ebp, esp
+ 00000085  83 EC 18			SUB esp, 24
+ 00000088  53				PUSH	ebx
+ 00000089  51				PUSH	ecx
+ 0000008A  52				PUSH	edx
+ 0000008B  9C				PUSHFD
+					
+
+					;ebp+20 maxfactor
+					;ebp+16 minFactor
+					;ebp+12 = size
+					;ebp+8 = array
+					;INITIALISE values for loop
+ 0000008C  8B 5D 08			MOV ebx, [ebp+8]
+ 0000008F  8B 4D 0C			MOV ecx, [ebp+12]
+					
+ 00000092  B8 00000000			MOV eax, 0
+
+
+
+
+				;get the min value, by pu
+ 00000097  8B D0			MOV edx, eax ;to keep eax value
+					
+ 00000099  FF 75 0C			PUSH [ebp+12];size
+ 0000009C  FF 75 08			PUSH [ebp+8];array pointer
+ 0000009F  E8 FFFFFF68			CALL min
+ 000000A4  89 45 FC			MOV [ebp-4], eax
+					
+					
+ 000000A7  8B C2			MOV eax, edx
+
+					;get the min value, by pu
+ 000000A9  8B D0			MOV edx, eax ;to keep eax value
+ 000000AB  FF 75 0C			PUSH [ebp+12];size
+ 000000AE  FF 75 08			PUSH [ebp+8];array pointer
+ 000000B1  E8 FFFFFF91			CALL max
+ 000000B6  89 45 F8			MOV [ebp-8], eax
+ 000000B9  8B C2			MOV eax, edx
+					
+ 000000BB				startLoop:
+
+					
+
+					;arrayi - minArray
+ 000000BB  8B 03			MOV eax, [ebx]
+ 000000BD  2B 45 FC			SUB eax, [ebp-4]
+ 000000C0  89 45 F4			MOV [ebp-12], eax
+
+
+					;MaxFactor - minFactor
+ 000000C3  8B 45 14			MOV eax, [ebp+20]
+ 000000C6  2B 45 10			SUB eax, [ebp+16]
+ 000000C9  89 45 F0			MOV [ebp-16], eax
+
+
+					;MaxArray-minArray
+ 000000CC  8B 45 F8			MOV eax, [ebp-8]
+ 000000CF  2B 45 FC			SUB eax, [ebp-4]
+ 000000D2  89 45 EC			MOV [ebp-20], eax
+
+
+					;(MaxFactor - minFactor) / (MaxArray-minArray)
+
+ 000000D5  9B DB E3			FINIT
+ 000000D8  D9 45 F0			FLD REAL4 PTR [ebp-16] 
+ 000000DB  D9 45 EC			FLD REAL4 PTR [ebp-20]
+ 000000DE  DE F9			FDIV
+ 000000E0  D9 55 EC			FST REAL4 PTR [ebp-20]
+
+
+					;(arrayi - minArray) * [(MaxFactor - minFactor) / (MaxArray-minArray)]
+ 000000E3  DB 45 F4			FILD DWORD PTR [ebp-12]
+ 000000E6  D9 45 EC			FLD REAL4 PTR  [ebp-20]
+ 000000E9  DE C9			FMUL
+ 000000EB  D9 55 EC			FST REAL4 PTR [ebp-20]
+
+
+
+					;add minFactor
+ 000000EE  D9 45 10			FLD REAL4 PTR [ebp+16]
+ 000000F1  D9 45 EC			FLD REAL4 PTR  [ebp-20]
+ 000000F4  DE C1			FADD
+ 000000F6  D9 55 EC			FST REAL4 PTR [ebp-20]
+				  	
+					;now we add the rounded, and non rounded to stack, to see if rounding occured
+ 000000F9  D9 45 EC			FLD REAL4 PTR [ebp-20]
+ 000000FC  DB 55 F0			FIST DWORD PTR [ebp-16]
+
+ 000000FF  DB 45 F0			FILD DWORD PTR [ebp-16]
+ 00000102  D9 45 EC			FLD REAL4 PTR [ebp-20]
+ 00000105  DE E9			FSUB
+ 00000107  D9 55 F0			FST REAL4 PTR [ebp-16]
+
+
+					;this is for hte rounding issue
+ 0000010A  8B 45 F0			MOV eax, [ebp-16]
+ 0000010D  83 F8 00			CMP eax, 0
+ 00000110  7F 02			JG add1
+ 00000112  EB 13			JMP dontadd1
+
+
+ 00000114				add1:;this gets rid of the rounding issue
+ 00000114  D9 45 EC			FLD REAL4 PTR [ebp-20]
+ 00000117  B8 00000001			MOV eax, 1
+ 0000011C  89 45 F0			MOV [ebp-16], eax
+					
+ 0000011F  DB 45 F0			FILD DWORD PTR [ebp-16]
+ 00000122  DE E9			FSUB
+ 00000124  D9 55 EC			FST REAL4 PTR [ebp-20]
+ 00000127				dontadd1:
+					
+
+					;INVOKE OutputFloat, [ebp-16]
+ 00000127  D9 45 EC			FLD REAL4 PTR [ebp-20]
+ 0000012A  DB 55 EC			FIST DWORD PTR [ebp-20]
+ 0000012D  8B 45 EC			MOV eax, [ebp-20]
+
+
+					
+					;replace array
+ 00000130  89 03			MOV [ebx], eax
+
+ 00000132  83 C3 04			ADD ebx, 4 ;next array number
+ 00000135  E2 84			LOOP startLoop
+
+ 00000137				endloop:
+ 00000137  8B 03			MOV	eax, [ebx];return value
+					
+					; Exit code
+ 00000139  9D				POPFD
+ 0000013A  5A				POP		edx
+ 0000013B  59				POP		ecx
+ 0000013C  5B				POP		ebx
+ 0000013D  8B E5			MOV		esp, ebp
+ 0000013F  5D				POP		ebp
+ 00000140  C2 0010			RET		16					; params are X bytes
+ 00000143			normalise ENDP
+
+				end LibMain
+
+				;leave floating point on floating point stack if it is the return value
+Microsoft (R) Macro Assembler Version 6.11		    10/12/23 16:08:38
+src\.\P09DLL.asm					     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+FLAT . . . . . . . . . . . . . .	GROUP
+STACK  . . . . . . . . . . . . .	32 Bit	 00001000 DWord	  Stack	  'STACK'	 
+_DATA  . . . . . . . . . . . . .	32 Bit	 00000000 DWord	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 00000143 DWord	  Public  'CODE'	
+
+
+Procedures,  parameters and locals:
+
+                N a m e                 Type     Value    Attr
+
+InputInt . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+InputStr . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+LibMain  . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 0000000C Public STDCALL
+  instance . . . . . . . . . . .	DWord	 bp + 00000008
+  reason . . . . . . . . . . . .	DWord	 bp + 0000000C
+  unused . . . . . . . . . . . .	DWord	 bp + 00000010
+OutputFloat8 . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+OutputFloat  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+OutputInt  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+OutputStr  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+max  . . . . . . . . . . . . . .	P Near	 00000047 _TEXT	Length= 0000003B Public STDCALL
+  startLoop  . . . . . . . . . .	L Near	 00000062 _TEXT	
+  newMax . . . . . . . . . . . .	L Near	 0000006E _TEXT	
+  noMax  . . . . . . . . . . . .	L Near	 00000073 _TEXT	
+min  . . . . . . . . . . . . . .	P Near	 0000000C _TEXT	Length= 0000003B Public STDCALL
+  startLoop  . . . . . . . . . .	L Near	 00000027 _TEXT	
+  newMin . . . . . . . . . . . .	L Near	 00000033 _TEXT	
+  noMin  . . . . . . . . . . . .	L Near	 00000038 _TEXT	
+normalise  . . . . . . . . . . .	P Near	 00000082 _TEXT	Length= 000000C1 Public STDCALL
+  startLoop  . . . . . . . . . .	L Near	 000000BB _TEXT	
+  add1 . . . . . . . . . . . . .	L Near	 00000114 _TEXT	
+  dontadd1 . . . . . . . . . . .	L Near	 00000127 _TEXT	
+  endloop  . . . . . . . . . . .	L Near	 00000137 _TEXT	
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+@CodeSize  . . . . . . . . . . .	Number	 00000000h   
+@DataSize  . . . . . . . . . . .	Number	 00000000h   
+@Interface . . . . . . . . . . .	Number	 00000003h   
+@Model . . . . . . . . . . . . .	Number	 00000007h   
+@code  . . . . . . . . . . . . .	Text   	 _TEXT
+@data  . . . . . . . . . . . . .	Text   	 FLAT
+@fardata?  . . . . . . . . . . .	Text   	 FLAT
+@fardata . . . . . . . . . . . .	Text   	 FLAT
+@stack . . . . . . . . . . . . .	Text   	 FLAT
+IO_INC . . . . . . . . . . . . .	Text   	 1
+
+	   0 Warnings
+	   0 Errors

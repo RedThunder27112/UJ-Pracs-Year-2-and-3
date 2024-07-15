@@ -1,0 +1,309 @@
+Microsoft (R) Macro Assembler Version 6.11		    08/10/23 15:39:24
+src\P03.asm						     Page 1 - 1
+
+
+				;	Author:     221003350 Ariel Sischy
+				;	Computer Science 3B - P03
+				.386
+				.MODEL FLAT ; Flat memory model
+				.STACK 4096 ; 4096 bytes
+
+				INCLUDE io.inc ; Directive to use the IO Library
+			      C ;
+			      C ; Simple I/O Routines - Version 2
+			      C ;
+			      C 
+			      C IFNDEF IO_INC
+ = 1			      C IO_INC equ <1>
+			      C 
+			      C OutputStr PROTO NEAR32 STDCALL :DWORD
+			      C OutputInt PROTO NEAR32 STDCALL :DWORD
+			      C OutputFloat PROTO NEAR32 STDCALL :DWORD
+			      C OutputFloat8 PROTO NEAR32 STDCALL :QWORD
+			      C InputInt PROTO NEAR32 STDCALL
+			      C InputStr PROTO NEAR32 STDCALL :DWORD, :DWORD
+			      C 
+			      C ELSE
+			      C ENDIF
+			      C 
+
+				; Exit function
+				ExitProcess PROTO NEAR32 stdcall, dwExitCode:DWORD
+
+				; The data section stores all global variables
+ 00000000			.DATA
+
+				;String input messages
+ 00000000 50 6C 65 61 73	strInputArray BYTE "Please enter input for image array: ",0
+	   65 20 65 6E 74
+	   65 72 20 69 6E
+	   70 75 74 20 66
+	   6F 72 20 69 6D
+	   61 67 65 20 61
+	   72 72 61 79 3A
+	   20 00
+ 00000025 50 6C 65 61 73	strInputBias BYTE "Please enter input for bias: ", 0
+	   65 20 65 6E 74
+	   65 72 20 69 6E
+	   70 75 74 20 66
+	   6F 72 20 62 69
+	   61 73 3A 20 00
+ 00000043 50 6C 65 61 73	strInputKernal BYTE "Please enter input for kernal: ", 0
+	   65 20 65 6E 74
+	   65 72 20 69 6E
+	   70 75 74 20 66
+	   6F 72 20 6B 65
+	   72 6E 61 6C 3A
+	   20 00
+
+
+ 00000063 50 6C 65 61 73	strInputExit BYTE "Please enter 0 to exit, or 1 to continue: ",0
+	   65 20 65 6E 74
+	   65 72 20 30 20
+	   74 6F 20 65 78
+	   69 74 2C 20 6F
+	   72 20 31 20 74
+	   6F 20 63 6F 6E
+	   74 69 6E 75 65
+	   3A 20 00
+
+ 0000008E 54 68 65 20 6F	strOutputMax BYTE "The output feature is (Input -> Output): ",0
+	   75 74 70 75 74
+	   20 66 65 61 74
+	   75 72 65 20 69
+	   73 20 28 49 6E
+	   70 75 74 20 2D
+	   3E 20 4F 75 74
+	   70 75 74 29 3A
+	   20 00
+ 000000B8 20 2D 3E 20 00	strArrow BYTE " -> ",0
+ 000000BD 20 0A 00		strSpace BYTE " ",10, 0
+
+ 000000C0 54 68 65 20 6B	strOutputKernal BYTE "The kernal value is: ", 0
+	   65 72 6E 61 6C
+	   20 76 61 6C 75
+	   65 20 69 73 3A
+	   20 00
+ 000000D6 54 68 65 20 62	strOutputBias BYTE "The bias value is: ", 0
+	   69 61 73 20 76
+	   61 6C 75 65 20
+	   69 73 3A 20 00
+				;input variablesS
+ 000000EA 00000000		kernal DWORD ?
+ 000000EE 00000000		bias DWORD ?
+ 000000F2 00000000		temp DWORD ?
+ 000000F6  00000004 [		imageArray DWORD 4 DUP (?)
+	    00000000
+	   ]
+
+
+
+
+ 00000000			.CODE
+ 00000000			_start:
+ 00000000				
+					;get variables while exiting loop
+ 00000000  B9 00000001			MOV ecx, 1
+ 00000005			whileLoopCondition: 
+					;if exit has been specified, exit loop
+ 00000005  83 F9 00			CMP ecx, 0
+ 00000008  0F 84 00000131		JZ whileLoopEnd
+
+ 0000000E			whileLoopBody:
+
+					;Msg asking for kernal
+					INVOKE OutputStr, ADDR strInputKernal
+					INVOKE InputInt
+ 0000001D  A3 000000EA R		MOV kernal, eax
+
+					;Msg asking for bias
+					INVOKE OutputStr, ADDR strInputBias
+					INVOKE InputInt
+ 00000031  A3 000000EE R		MOV bias, eax
+
+					;START FOR GETTING VALUES FOR INPUT ARRAY FROM USER
+					;Msg asking user for image array inputs
+ 00000036  B9 00000004			MOV ecx, 4 ; loop 4 times
+
+ 0000003B  8D 1D 000000F6 R		LEA ebx, imageArray ;load address of imageArray
+ 00000041  E3 16			JECXZ inputLoopEnd ; if ecx is zero, error/end loop
+
+ 00000043				inputLoopStart:
+
+					;get user input
+					INVOKE OutputStr, ADDR strInputArray
+					INVOKE InputInt
+ 00000052  89 03			MOV [ebx], eax;move user input to array
+					
+ 00000054  83 C3 04			ADD ebx, 4 ; as DWORD, size 4
+ 00000057  E2 EA			LOOP inputLoopStart
+
+ 00000059				inputLoopEnd:
+					INVOKE OutputStr, ADDR strSpace
+
+					INVOKE OutputStr, ADDR strOutputBias
+					INVOKE OutputInt, bias
+					INVOKE OutputStr, ADDR strSpace
+
+					INVOKE OutputStr, ADDR strOutputKernal
+					INVOKE OutputInt, kernal
+					INVOKE OutputStr, ADDR strSpace
+					
+
+					;START OF OUTPUTTING ARRAY
+ 000000A1  B9 00000004			MOV ecx, 4 ; loop 4 times
+
+ 000000A6  8D 1D 000000F6 R		LEA ebx, imageArray ;load address of imageArray
+ 000000AC  E3 00			JECXZ otuputLoopStart ; if ecx is zero, error/end loop
+
+ 000000AE				otuputLoopStart:
+
+					;calculate o value
+
+					;get user input
+					;INVOKE OutputStr, ADDR strOutputMax
+					;INVOKE OutputInt, [ebx]
+					;INVOKE OutputStr, ADDR strSpace
+
+				;;;;
+				;calculate o value
+					
+
+
+					INVOKE OutputStr, ADDR strOutputMax
+					INVOKE OutputInt, [ebx]
+
+
+ 000000BF  8B 03			MOV eax, [ebx]
+ 000000C1  8B F3			MOV esi, ebx ; store ebx value temporari;y in esi
+ 000000C3  8B 1D 000000EA R		MOV ebx, kernal ; move kernal to ebx
+					
+ 000000C9  99				CDQ
+ 000000CA  F7 FB			IDIV ebx ; divide arrayI by kernal
+
+ 000000CC  8B DE			MOV ebx, esi ; return esi to ebx
+					
+ 000000CE  03 05 000000EE R		ADD eax, bias
+ 000000D4  89 03			MOV [ebx], eax
+					;if statment to check if eax is above 255
+ 000000D6  3D 000000FF			CMP eax, 255 ; compare if eax is above 255
+
+ 000000DB  79 1F			JNS above255; if eax is above 255, keep at 255
+ 000000DD  EB 00			JMP below255; if eax is below 255, set bvalue in array to eax
+
+ 000000DF				below255:
+					INVOKE OutputStr, ADDR strArrow
+					INVOKE OutputInt, [ebx]
+					INVOKE OutputStr, ADDR strSpace
+ 000000FA  EB 1E			JMP after255
+ 000000FC				above255:
+					;end if statement
+					INVOKE OutputStr, ADDR strArrow
+					INVOKE OutputInt, 255
+					INVOKE OutputStr, ADDR strSpace
+ 0000011A				after255:
+
+
+ 0000011A  83 C3 04			ADD ebx, 4 ; as DWORD, size 4
+ 0000011D  E2 8F			LOOP otuputLoopStart
+
+ 0000011F				otuputLoopEnd:
+					INVOKE OutputStr, ADDR strSpace
+
+
+
+
+					;Msg asking to exit loop
+					INVOKE OutputStr, ADDR strInputExit
+					INVOKE InputInt
+ 00000138  8B C8			MOV ecx, eax
+
+ 0000013A  E9 FFFFFEC6			JMP whileLoopCondition ;jump to start of loop
+
+ 0000013F			whileLoopEnd:
+
+
+					INVOKE ExitProcess, 0
+ 00000146			Public _start
+				END
+Microsoft (R) Macro Assembler Version 6.11		    08/10/23 15:39:24
+src\P03.asm						     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+FLAT . . . . . . . . . . . . . .	GROUP
+STACK  . . . . . . . . . . . . .	32 Bit	 00001000 DWord	  Stack	  'STACK'	 
+_DATA  . . . . . . . . . . . . .	32 Bit	 00000106 DWord	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 00000146 DWord	  Public  'CODE'	
+
+
+Procedures,  parameters and locals:
+
+                N a m e                 Type     Value    Attr
+
+$$$$$$00001  . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 00000146 Private
+  whileLoopCondition . . . . . .	L Near	 00000005 _TEXT	
+  whileLoopBody  . . . . . . . .	L Near	 0000000E _TEXT	
+  inputLoopStart . . . . . . . .	L Near	 00000043 _TEXT	
+  inputLoopEnd . . . . . . . . .	L Near	 00000059 _TEXT	
+  otuputLoopStart  . . . . . . .	L Near	 000000AE _TEXT	
+  below255 . . . . . . . . . . .	L Near	 000000DF _TEXT	
+  above255 . . . . . . . . . . .	L Near	 000000FC _TEXT	
+  after255 . . . . . . . . . . .	L Near	 0000011A _TEXT	
+  otuputLoopEnd  . . . . . . . .	L Near	 0000011F _TEXT	
+  whileLoopEnd . . . . . . . . .	L Near	 0000013F _TEXT	
+ExitProcess  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+InputInt . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+InputStr . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+OutputFloat8 . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+OutputFloat  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+OutputInt  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+OutputStr  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+@CodeSize  . . . . . . . . . . .	Number	 00000000h   
+@DataSize  . . . . . . . . . . .	Number	 00000000h   
+@Interface . . . . . . . . . . .	Number	 00000000h   
+@Model . . . . . . . . . . . . .	Number	 00000007h   
+@code  . . . . . . . . . . . . .	Text   	 _TEXT
+@data  . . . . . . . . . . . . .	Text   	 FLAT
+@fardata?  . . . . . . . . . . .	Text   	 FLAT
+@fardata . . . . . . . . . . . .	Text   	 FLAT
+@stack . . . . . . . . . . . . .	Text   	 FLAT
+IO_INC . . . . . . . . . . . . .	Text   	 1
+_start . . . . . . . . . . . . .	L Near	 00000000 _TEXT	Public
+above255 . . . . . . . . . . . .	L Near	 000000FC _TEXT	
+after255 . . . . . . . . . . . .	L Near	 0000011A _TEXT	
+below255 . . . . . . . . . . . .	L Near	 000000DF _TEXT	
+bias . . . . . . . . . . . . . .	DWord	 000000EE _DATA	
+imageArray . . . . . . . . . . .	DWord	 000000F6 _DATA	
+inputLoopEnd . . . . . . . . . .	L Near	 00000059 _TEXT	
+inputLoopStart . . . . . . . . .	L Near	 00000043 _TEXT	
+kernal . . . . . . . . . . . . .	DWord	 000000EA _DATA	
+otuputLoopEnd  . . . . . . . . .	L Near	 0000011F _TEXT	
+otuputLoopStart  . . . . . . . .	L Near	 000000AE _TEXT	
+strArrow . . . . . . . . . . . .	Byte	 000000B8 _DATA	
+strInputArray  . . . . . . . . .	Byte	 00000000 _DATA	
+strInputBias . . . . . . . . . .	Byte	 00000025 _DATA	
+strInputExit . . . . . . . . . .	Byte	 00000063 _DATA	
+strInputKernal . . . . . . . . .	Byte	 00000043 _DATA	
+strOutputBias  . . . . . . . . .	Byte	 000000D6 _DATA	
+strOutputKernal  . . . . . . . .	Byte	 000000C0 _DATA	
+strOutputMax . . . . . . . . . .	Byte	 0000008E _DATA	
+strSpace . . . . . . . . . . . .	Byte	 000000BD _DATA	
+temp . . . . . . . . . . . . . .	DWord	 000000F2 _DATA	
+whileLoopBody  . . . . . . . . .	L Near	 0000000E _TEXT	
+whileLoopCondition . . . . . . .	L Near	 00000005 _TEXT	
+whileLoopEnd . . . . . . . . . .	L Near	 0000013F _TEXT	
+
+	   0 Warnings
+	   0 Errors

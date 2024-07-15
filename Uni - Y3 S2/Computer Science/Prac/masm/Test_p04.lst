@@ -1,0 +1,1154 @@
+Microsoft (R) Macro Assembler Version 6.11		    08/17/23 19:10:16
+src\Test_p04.asm					     Page 1 - 1
+
+
+				;	Author:     221003350 Ariel Sischy
+				;	Computer Science 3B - P04
+				.386
+				.MODEL FLAT ; Flat memory model
+				.STACK 4096 ; 4096 bytes
+
+				INCLUDE io.inc ; Directive to use the IO Library
+			      C ;
+			      C ; Simple I/O Routines - Version 2
+			      C ;
+			      C 
+			      C IFNDEF IO_INC
+ = 1			      C IO_INC equ <1>
+			      C 
+			      C OutputStr PROTO NEAR32 STDCALL :DWORD
+			      C OutputInt PROTO NEAR32 STDCALL :DWORD
+			      C OutputFloat PROTO NEAR32 STDCALL :DWORD
+			      C OutputFloat8 PROTO NEAR32 STDCALL :QWORD
+			      C InputInt PROTO NEAR32 STDCALL
+			      C InputStr PROTO NEAR32 STDCALL :DWORD, :DWORD
+			      C 
+			      C ELSE
+			      C ENDIF
+			      C 
+
+				; Exit function
+				ExitProcess PROTO NEAR32 stdcall, dwExitCode:DWORD
+
+				; The data section stores all global variables
+ 00000000			.DATA
+
+
+
+				;string user input messages
+ 00000000 50 6C 65 61 73	strInputExit BYTE "Please enter 0 to exit, or 1 to continue: ",0
+	   65 20 65 6E 74
+	   65 72 20 30 20
+	   74 6F 20 65 78
+	   69 74 2C 20 6F
+	   72 20 31 20 74
+	   6F 20 63 6F 6E
+	   74 69 6E 75 65
+	   3A 20 00
+ 0000002B 50 6C 65 61 73	strInputI BYTE "Please enter number for I (row col) ( ",0
+	   65 20 65 6E 74
+	   65 72 20 6E 75
+	   6D 62 65 72 20
+	   66 6F 72 20 49
+	   20 28 72 6F 77
+	   20 63 6F 6C 29
+	   20 28 20 00
+ 00000052 50 6C 65 61 73	strInputK BYTE "Please enter number for K (row col) ( ",0
+	   65 20 65 6E 74
+	   65 72 20 6E 75
+	   6D 62 65 72 20
+	   66 6F 72 20 4B
+	   20 28 72 6F 77
+	   20 63 6F 6C 29
+	   20 28 20 00
+ 00000079 50 6C 65 61 73	strInputCutOff BYTE "Please enter cutoff value: ",0
+	   65 20 65 6E 74
+	   65 72 20 63 75
+	   74 6F 66 66 20
+	   76 61 6C 75 65
+	   3A 20 00
+ 00000095 72 2A 63 2B 63	strHEading BYTE "r*c+c value  row  col",10,0
+	   20 76 61 6C 75
+	   65 20 20 72 6F
+	   77 20 20 63 6F
+	   6C 0A 00
+
+ 000000AC 20 29 3A 20 00	strInputBracket BYTE " ): ", 0
+ 000000B1 20 00			strInputSpace BYTE " ", 0
+ 000000B3 2A 00			strTimes BYTE "*", 0
+ 000000B5 2B 00			strPlus BYTE "+",0
+ 000000B7 3D 00			strEqual BYTE "=",0
+
+ 000000B9 20 0A 00		strTest BYTE " ",10, 0
+
+
+
+ 000000BC 53 75 6D 20 66	str00 BYTE "Sum for O 00 ",10,0
+	   6F 72 20 4F 20
+	   30 30 20 0A 00
+ 000000CB 53 75 6D 20 66	str10 BYTE "Sum for O 10 ",10,0
+	   6F 72 20 4F 20
+	   31 30 20 0A 00
+ 000000DA 53 75 6D 20 66	str20 BYTE "Sum for O 20 ",10,0
+	   6F 72 20 4F 20
+	   32 30 20 0A 00
+
+ 000000E9 53 75 6D 20 66	str01 BYTE "Sum for O 01 ",10,0
+	   6F 72 20 4F 20
+	   30 31 20 0A 00
+ 000000F8 53 75 6D 20 66	str11 BYTE "Sum for O 11 ",10,0
+	   6F 72 20 4F 20
+	   31 31 20 0A 00
+ 00000107 53 75 6D 20 66	str21 BYTE "Sum for O 21 ",10,0
+	   6F 72 20 4F 20
+	   32 31 20 0A 00
+
+ 00000116 53 75 6D 20 66	str02 BYTE "Sum for O 02 ",10,0
+	   6F 72 20 4F 20
+	   30 32 20 0A 00
+ 00000125 53 75 6D 20 66	str12 BYTE "Sum for O 12 ",10,0
+	   6F 72 20 4F 20
+	   31 32 20 0A 00
+ 00000134 53 75 6D 20 66	str22 BYTE "Sum for O 22 ",10,0
+	   6F 72 20 4F 20
+	   32 32 20 0A 00
+
+
+				;arrays
+ 00000143  00000010 [		imageArray DWORD 16 DUP (?)
+	    00000000
+	   ]
+ 00000183  00000004 [		kernalArray DWORD 4 DUP (?)
+	    00000000
+	   ]
+ 00000193  00000009 [		outputArray DWORD 9 DUP (?)
+	    00000000
+	   ]
+
+				;numbers
+ 000001B7 00000000		cutoff DWORD ?
+
+ 000001BB 00000000		temp DWORD ?
+ 000001BF 00000001		a DWORD 1
+
+ 000001C3 00000000		i DWORD ?
+ 000001C7 00000000		k DWORD ?
+ 000001CB 00000000		d DWORD ?
+ 000001CF 00000000		cc DWORD ?
+
+ 000001D3 00000000		o1 DWORD ?
+ 000001D7 00000000		o2 DWORD ?
+ 000001DB 00000000		o3 DWORD ?
+ 000001DF 00000000		o4 DWORD ?
+ 000001E3 00000000		o5 DWORD ?
+ 000001E7 00000000		o6 DWORD ?
+ 000001EB 00000000		o7 DWORD ?
+ 000001EF 00000000		o8 DWORD ?
+ 000001F3 00000000		o9 DWORD ?
+ 000001F7 00000000		o10 DWORD ?
+ 000001FB 00000000		o11 DWORD ?
+ 000001FF 00000000		o12 DWORD ?
+ 00000203 00000000		o13 DWORD ?
+ 00000207 00000000		o14 DWORD ?
+ 0000020B 00000000		o15 DWORD ?
+ 0000020F 00000000		o16 DWORD ?
+ 00000213 00000000		o17 DWORD ?
+
+ 00000000			.CODE
+ 00000000			_start:
+ 00000000				
+
+
+
+					;-----------------------------;
+					;Block for fulling I in while Loop - START
+					;------------------------------;
+ 00000000  B9 00000010			MOV ecx, 16 ; size of array
+ 00000005  BA 00000001			MOV edx, 1 ; row
+ 0000000A  BE 00000001			MOV esi, 1 ; col
+
+ 0000000F  8D 1D 00000143 R		LEA ebx, imageArray ;load address of imageArray
+ 00000015  E3 14			JECXZ whileEndI ; if ecx is zero, error/end loop
+
+ 00000017				whileBodyI:
+
+					;Msg asking to for I value
+
+					;'INVOKE OutputStr, ADDR strInputI
+				;INVOKE OutputInt, edx
+					;INVOKE OutputStr, ADDR strInputSpace
+					;INVOKE OutputInt, esi
+					;INVOKE OutputStr, ADDR strInputBracket
+					;INVOKE InputInt
+ 00000017  A1 000001BF R		MOV eax, a
+ 0000001C  89 03			MOV [ebx], eax;move user input to array
+ 0000001E  FF 05 000001BF R		INC a
+
+ 00000024  42				INC edx
+ 00000025  4E				DEC esi
+
+ 00000026  83 C3 04			ADD ebx, 4 ; as DWORD, size 4
+ 00000029  E2 EC			LOOP whileBodyI
+
+ 0000002B				whileEndI:
+
+
+					
+					;-----------------------------;
+					;Block for fulling I in while Loop - END
+					;------------------------------;
+
+ 0000002B  C7 05 000001BF R		MOV a, 1
+	   00000001
+					;-----------------------------;
+					;Block for fulling K in while Loop - START
+					;------------------------------;
+ 00000035  B9 00000004			MOV ecx, 4
+
+ 0000003A  8D 1D 00000183 R		LEA ebx, kernalArray ;load address of kernalArray
+ 00000040  E3 12			JECXZ whileEndK ; if ecx is zero, error/end loop
+
+ 00000042				whileBodyK:
+
+
+					;MOV edx, 1
+					;Msg asking to for K value
+					;INVOKE OutputStr, ADDR strInputK
+					;INVOKE OutputInt, edx
+					;INVOKE OutputStr, ADDR strInputSpace
+					;INVOKE OutputInt, edx
+					;INVOKE OutputStr, ADDR strInputBracket
+					;INVOKE InputInt
+					
+ 00000042  A1 000001BF R			MOV eax, a
+ 00000047  89 03			MOV [ebx], eax;move user input to array
+ 00000049  FF 05 000001BF R		INC a
+ 0000004F  83 C3 04			ADD ebx, 4 ; as DWORD, size 4
+ 00000052  E2 EE			LOOP whileBodyK
+
+ 00000054				whileEndK:
+
+					;-----------------------------;
+					;Block for fulling K in while Loop - END
+					;------------------------------;
+
+					;-----------------------------;
+					;Block for adding K and I to stack - start
+					;------------------------------;
+					;MOV ecx 25; 16 + 9 = 25 size of stack
+ 00000054  55				PUSH ebp
+ 00000055  8B EC			MOV ebp, esp ;create stack frame
+					;SUB esp, 288; reserve 8*9*4=288 DWORDS on stack 
+
+ 00000057  B9 00000000			MOV ecx, 0 ;row
+ 0000005C  BA 00000000			MOV edx, 0 ; col
+
+ 00000061  89 25 000001BB R		MOV temp, esp
+ 00000067  81 05 000001BB R		ADD temp, -288
+	   FFFFFEE0
+ 00000071  EB 0C			JMP stackStart
+ 00000073				stackCondition:
+ 00000073  3B 25 000001BB R		CMP esp, temp ;while(esp > 0)
+					
+ 00000079  0F 84 00000299		JZ stackEnd
+ 0000007F				stackStart:
+					
+
+
+					
+					;calc to get row,col of I array
+ 0000007F  8B C1			MOV eax, ecx ; eax = row
+ 00000081  6B C0 04			IMUL eax, 4 ; eax = row*numCol
+ 00000084  03 C2			ADD eax, edx; eax = row*numCol + col
+
+ 00000086  6B C0 04			IMUL eax, 4 ; as dword is size 4
+
+					;move a value from I array to stack
+ 00000089  8D 1D 00000143 R		LEA ebx, imageArray ;load address of imageArray
+ 0000008F  03 D8			ADD ebx, eax ; as DWORD, size 4.... set size to what i want
+ 00000091  FF 33			PUSH [ebx] ; add the I value from array to stack
+
+ 00000093  89 0D 000001CF R		MOV cc, ecx
+ 00000099  89 15 000001CB R		MOV d, edx
+ 0000009F  A3 000001C3 R		MOV i, eax
+ 000000A4  8B 03			MOV eax, [ebx]
+ 000000A6  A3 000001C7 R		MOV k, eax
+					INVOKE OutputStr, ADDR strTest
+					INVOKE OutputStr, ADDR strTest
+					INVOKE OutputStr, ADDR strHEading
+					INVOKE OutputInt, i
+					INVOKE OutputStr, ADDR strInputBracket
+					INVOKE OutputInt, k
+					INVOKE OutputStr, ADDR strInputBracket
+					INVOKE OutputInt, cc
+					INVOKE OutputStr, ADDR strInputBracket
+					INVOKE OutputInt, d
+
+					;----------------------------
+					;BLOCK TO CHECK ROW COL BOUND START
+					;----------------------------
+					;store edx and ecx
+ 00000113  8B F1			MOV esi, ecx
+ 00000115  8B FA			MOV edi, edx
+					;if to check if row is in 0-1 bound
+ 00000117  83 F9 02			CMP ecx, 2
+ 0000011A  7D 02			JGE outOfBoundsC1 ; if ecx >= 2
+ 0000011C  EB 11			JMP endBoundCheckC1
+ 0000011E				outOfBoundsC1:
+ 0000011E  83 F9 03			CMP ecx, 3 ; if ecx >= 3
+ 00000121  7D 07			JGE setToOneC1
+ 00000123  B9 00000000			MOV ecx, 0
+ 00000128  EB 05			JMP endBoundCheckC1
+
+ 0000012A				setToOneC1:
+ 0000012A  B9 00000001			MOV ecx, 1
+
+ 0000012F				endBoundCheckC1:
+
+ 0000012F  83 FA 02			CMP edx, 2
+ 00000132  7D 02			JGE outOfBoundsD1 ; if ecx >= 2
+ 00000134  EB 11			JMP endBoundCheckD1
+ 00000136				outOfBoundsD1:
+ 00000136  83 FA 03			CMP edx, 3 ; if ecx >= 3
+ 00000139  7D 07			JGE setToOneD1
+ 0000013B  BA 00000000			MOV edx, 0
+ 00000140  EB 05			JMP endBoundCheckD1
+
+ 00000142				setToOneD1:
+ 00000142  BA 00000001			MOV edx, 1
+
+ 00000147				endBoundCheckD1:
+
+
+					;----------------------------
+					;BLOCK TO CHECK ROW COL BOUND END
+					;----------------------------
+
+
+
+					;calc to get row,col of K array
+ 00000147  8B C1			MOV eax, ecx ; eax = row
+ 00000149  6B C0 02			IMUL eax, 2 ; eax = row*numCol
+ 0000014C  03 C2			ADD eax, edx; eax = row*numCol + col
+
+ 0000014E  6B C0 04			IMUL eax, 4 ; as dword is size 4
+
+					;move a value from K array to stack
+ 00000151  8D 1D 00000183 R		LEA ebx, kernalArray ;load address of imageArray
+ 00000157  03 D8			ADD ebx, eax ; as DWORD, size 4.... set size to what i want
+ 00000159  FF 33			PUSH [ebx] ; add the K value from array to stack
+
+
+ 0000015B  89 0D 000001CF R		MOV cc, ecx
+ 00000161  89 15 000001CB R		MOV d, edx
+ 00000167  A3 000001C3 R		MOV i, eax
+ 0000016C  8B 03			MOV eax, [ebx]
+ 0000016E  A3 000001C7 R		MOV k, eax
+					
+					INVOKE OutputStr, ADDR strTest
+					INVOKE OutputInt, i
+					INVOKE OutputStr, ADDR strInputBracket
+					INVOKE OutputInt, k
+					INVOKE OutputStr, ADDR strInputBracket
+					INVOKE OutputInt, cc
+					INVOKE OutputStr, ADDR strInputBracket
+					INVOKE OutputInt, d
+
+ 000001C7  8B D7			MOV edx, edi ;reset values
+ 000001C9  8B CE			MOV ecx, esi
+
+
+					;Now do the same as above, but with col+1
+ 000001CB  42				INC edx
+
+					;calc to get row,col of I array
+ 000001CC  8B C1			MOV eax, ecx ; eax = row
+ 000001CE  6B C0 04			IMUL eax, 4 ; eax = row*numCol
+ 000001D1  03 C2			ADD eax, edx; eax = row*numCol + col
+
+ 000001D3  6B C0 04			IMUL eax, 4 ; as dword is size 4
+
+					;move a value from I array to stack
+ 000001D6  8D 1D 00000143 R		LEA ebx, imageArray ;load address of imageArray
+ 000001DC  03 D8			ADD ebx, eax ; as DWORD, size 4.... set size to what i want
+ 000001DE  FF 33			PUSH [ebx] ; add the I value from array to stack
+
+ 000001E0  89 0D 000001CF R		MOV cc, ecx
+ 000001E6  89 15 000001CB R		MOV d, edx
+ 000001EC  A3 000001C3 R		MOV i, eax
+ 000001F1  8B 03			MOV eax, [ebx]
+ 000001F3  A3 000001C7 R		MOV k, eax
+					
+					INVOKE OutputStr, ADDR strTest
+					INVOKE OutputInt, i
+					INVOKE OutputStr, ADDR strInputBracket
+					INVOKE OutputInt, k
+					INVOKE OutputStr, ADDR strInputBracket
+					INVOKE OutputInt, cc
+					INVOKE OutputStr, ADDR strInputBracket
+					INVOKE OutputInt, d
+
+					;----------------------------
+					;BLOCK TO CHECK ROW COL BOUND START
+					;----------------------------
+					;store edx and ecx
+ 0000024C  8B F1			MOV esi, ecx
+ 0000024E  8B FA			MOV edi, edx
+					;if to check if row is in 0-1 bound
+ 00000250  83 F9 02			CMP ecx, 2
+ 00000253  7D 02			JGE outOfBoundsC2 ; if ecx >= 2
+ 00000255  EB 11			JMP endBoundCheckC2
+ 00000257				outOfBoundsC2:
+ 00000257  83 F9 03			CMP ecx, 3 ; if ecx >= 3
+ 0000025A  7D 07			JGE setToOneC2
+ 0000025C  B9 00000000			MOV ecx, 0
+ 00000261  EB 05			JMP endBoundCheckC2
+
+ 00000263				setToOneC2:
+ 00000263  B9 00000001			MOV ecx, 1
+
+ 00000268				endBoundCheckC2:
+
+ 00000268  83 FA 02			CMP edx, 2
+ 0000026B  7D 02			JGE outOfBoundsD2 ; if ecx >= 2
+ 0000026D  EB 11			JMP endBoundCheckD2
+ 0000026F				outOfBoundsD2:
+ 0000026F  83 FA 03			CMP edx, 3 ; if ecx >= 3
+ 00000272  7D 07			JGE setToOneD2
+ 00000274  BA 00000000			MOV edx, 0
+ 00000279  EB 05			JMP endBoundCheckD2
+
+ 0000027B				setToOneD2:
+ 0000027B  BA 00000001			MOV edx, 1
+
+ 00000280				endBoundCheckD2:
+					;----------------------------
+					;BLOCK TO CHECK ROW COL BOUND END
+					;----------------------------
+
+					;calc to get row,col of K array
+ 00000280  8B C1			MOV eax, ecx ; eax = row
+ 00000282  6B C0 02			IMUL eax, 2 ; eax = row*numCol
+ 00000285  03 C2			ADD eax, edx; eax = row*numCol + col
+
+ 00000287  6B C0 04			IMUL eax, 4 ; as dword is size 4
+
+					;move a value from K array to stack
+ 0000028A  8D 1D 00000183 R		LEA ebx, kernalArray ;load address of imageArray
+ 00000290  03 D8			ADD ebx, eax ; as DWORD, size 4.... set size to what i want
+ 00000292  FF 33			PUSH [ebx] ; add the K value from array to stack
+
+ 00000294  89 0D 000001CF R		MOV cc, ecx
+ 0000029A  89 15 000001CB R		MOV d, edx
+ 000002A0  A3 000001C3 R		MOV i, eax
+ 000002A5  8B 03			MOV eax, [ebx]
+ 000002A7  A3 000001C7 R		MOV k, eax
+					
+					INVOKE OutputStr, ADDR strTest
+					INVOKE OutputInt, i
+					INVOKE OutputStr, ADDR strInputBracket
+					INVOKE OutputInt, k
+					INVOKE OutputStr, ADDR strInputBracket
+					INVOKE OutputInt, cc
+					INVOKE OutputStr, ADDR strInputBracket
+					INVOKE OutputInt, d
+ 00000300  8B D7			MOV edx, edi ;reset values
+ 00000302  8B CE			MOV ecx, esi
+
+					
+ 00000304  4A				DEC edx ;now deincrement col
+ 00000305  41				INC ecx ;now increment row
+
+
+					;----------------------------
+					;BLOCK TO CHECK ROW COL BOUND START for out of 4 range
+					;----------------------------
+
+					;if to check if row is in 0-3 bound
+ 00000306  83 F9 04			CMP ecx, 4
+ 00000309  7D 02			JGE outOfBounds4 ; if ecx >= 4
+ 0000030B  EB 06			JMP endBoundCheck4
+ 0000030D				outOfBounds4:
+ 0000030D  B9 00000000			MOV ecx, 0
+ 00000312  42				INC edx
+
+ 00000313				endBoundCheck4:
+					;----------------------------
+					;BLOCK TO CHECK ROW COL BOUND END
+					;----------------------------
+
+
+ 00000313  E9 FFFFFD5B			JMP stackCondition ; go back to start
+ 00000318				stackEnd:
+					
+					;-----------------------------;
+					;Block for adding K and I to stack - end
+					;------------------------------;
+
+
+					;-----------------------------;
+					;Block for outputting stack START
+					;------------------------------;
+
+ 00000318				stackOutputStart:
+
+					
+
+
+
+				INVOKE OutputStr, ADDR strTest
+ 00000322  BA 00000000			MOV edx, 0
+ 00000327  58				POP eax
+ 00000328  A3 000001D3 R		MOV o1, eax
+ 0000032D  59				POP ecx
+ 0000032E  89 0D 000001D7 R		MOV o2, ecx
+ 00000334  0F AF C1			imul eax, ecx
+ 00000337  03 D0			ADD edx, eax
+
+ 00000339  58				POP eax
+ 0000033A  A3 000001DB R		MOV o3, eax
+ 0000033F  59				POP ecx
+ 00000340  89 0D 000001DF R		MOV o4, ecx
+ 00000346  0F AF C1			imul eax, ecx
+ 00000349  03 D0			ADD edx, eax
+
+ 0000034B  58				POP eax
+ 0000034C  A3 000001E3 R		MOV o5, eax
+ 00000351  59				POP ecx
+ 00000352  89 0D 000001E7 R		MOV o6, ecx
+ 00000358  0F AF C1			imul eax, ecx
+ 0000035B  03 D0			ADD edx, eax
+
+ 0000035D  58				POP eax
+ 0000035E  A3 000001EB R		MOV o7, eax
+ 00000363  59				POP ecx
+ 00000364  89 0D 000001EF R		MOV o8, ecx
+ 0000036A  0F AF C1			imul eax, ecx
+ 0000036D  03 D0			ADD edx, eax
+
+ 0000036F  89 15 000001F3 R		MOV o9, edx
+
+					INVOKE OutputStr, ADDR strTest
+					INVOKE OutputStr, ADDR str22
+					INVOKE OutputInt, o1
+					INVOKE OutputStr, ADDR strTimes
+					INVOKE OutputInt, o2
+					INVOKE OutputStr, ADDR strPlus
+					INVOKE OutputInt, o3
+					INVOKE OutputStr, ADDR strTimes
+					INVOKE OutputInt, o4
+					INVOKE OutputStr, ADDR strPlus
+					INVOKE OutputInt, o5
+					INVOKE OutputStr, ADDR strTimes
+					INVOKE OutputInt, o6
+					INVOKE OutputStr, ADDR strPlus
+					INVOKE OutputInt, o7
+					INVOKE OutputStr, ADDR strTimes
+					INVOKE OutputInt, o8
+					INVOKE OutputStr, ADDR strEqual
+					INVOKE OutputInt, o9
+
+					
+
+
+
+					INVOKE OutputStr, ADDR strTest
+ 00000446  BA 00000000			MOV edx, 0
+ 0000044B  58				POP eax
+ 0000044C  A3 000001D3 R		MOV o1, eax
+ 00000451  59				POP ecx
+ 00000452  89 0D 000001D7 R		MOV o2, ecx
+ 00000458  0F AF C1			imul eax, ecx
+ 0000045B  03 D0			ADD edx, eax
+
+ 0000045D  58				POP eax
+ 0000045E  A3 000001DB R		MOV o3, eax
+ 00000463  59				POP ecx
+ 00000464  89 0D 000001DF R		MOV o4, ecx
+ 0000046A  0F AF C1			imul eax, ecx
+ 0000046D  03 D0			ADD edx, eax
+
+ 0000046F  58				POP eax
+ 00000470  A3 000001E3 R		MOV o5, eax
+ 00000475  59				POP ecx
+ 00000476  89 0D 000001E7 R		MOV o6, ecx
+ 0000047C  0F AF C1			imul eax, ecx
+ 0000047F  03 D0			ADD edx, eax
+
+ 00000481  58				POP eax
+ 00000482  A3 000001EB R		MOV o7, eax
+ 00000487  59				POP ecx
+ 00000488  89 0D 000001EF R		MOV o8, ecx
+ 0000048E  0F AF C1			imul eax, ecx
+ 00000491  03 D0			ADD edx, eax
+
+ 00000493  89 15 000001F7 R		MOV o10, edx
+
+					INVOKE OutputStr, ADDR strTest
+					INVOKE OutputStr, ADDR str12
+					INVOKE OutputInt, o1
+					INVOKE OutputStr, ADDR strTimes
+					INVOKE OutputInt, o2
+					INVOKE OutputStr, ADDR strPlus
+					INVOKE OutputInt, o3
+					INVOKE OutputStr, ADDR strTimes
+					INVOKE OutputInt, o4
+					INVOKE OutputStr, ADDR strPlus
+					INVOKE OutputInt, o5
+					INVOKE OutputStr, ADDR strTimes
+					INVOKE OutputInt, o6
+					INVOKE OutputStr, ADDR strPlus
+					INVOKE OutputInt, o7
+					INVOKE OutputStr, ADDR strTimes
+					INVOKE OutputInt, o8
+					INVOKE OutputStr, ADDR strEqual
+					INVOKE OutputInt, o10
+
+
+
+
+					INVOKE OutputStr, ADDR strTest
+ 0000056A  BA 00000000			MOV edx, 0
+ 0000056F  58				POP eax
+ 00000570  A3 000001D3 R		MOV o1, eax
+ 00000575  59				POP ecx
+ 00000576  89 0D 000001D7 R		MOV o2, ecx
+ 0000057C  0F AF C1			imul eax, ecx
+ 0000057F  03 D0			ADD edx, eax
+
+ 00000581  58				POP eax
+ 00000582  A3 000001DB R		MOV o3, eax
+ 00000587  59				POP ecx
+ 00000588  89 0D 000001DF R		MOV o4, ecx
+ 0000058E  0F AF C1			imul eax, ecx
+ 00000591  03 D0			ADD edx, eax
+
+ 00000593  58				POP eax
+ 00000594  A3 000001E3 R		MOV o5, eax
+ 00000599  59				POP ecx
+ 0000059A  89 0D 000001E7 R		MOV o6, ecx
+ 000005A0  0F AF C1			imul eax, ecx
+ 000005A3  03 D0			ADD edx, eax
+
+ 000005A5  58				POP eax
+ 000005A6  A3 000001EB R		MOV o7, eax
+ 000005AB  59				POP ecx
+ 000005AC  89 0D 000001EF R		MOV o8, ecx
+ 000005B2  0F AF C1			imul eax, ecx
+ 000005B5  03 D0			ADD edx, eax
+
+ 000005B7  89 15 000001FB R		MOV o11, edx
+
+					INVOKE OutputStr, ADDR strTest
+					INVOKE OutputStr, ADDR str02
+					INVOKE OutputInt, o1
+					INVOKE OutputStr, ADDR strTimes
+					INVOKE OutputInt, o2
+					INVOKE OutputStr, ADDR strPlus
+					INVOKE OutputInt, o3
+					INVOKE OutputStr, ADDR strTimes
+					INVOKE OutputInt, o4
+					INVOKE OutputStr, ADDR strPlus
+					INVOKE OutputInt, o5
+					INVOKE OutputStr, ADDR strTimes
+					INVOKE OutputInt, o6
+					INVOKE OutputStr, ADDR strPlus
+					INVOKE OutputInt, o7
+					INVOKE OutputStr, ADDR strTimes
+					INVOKE OutputInt, o8
+					INVOKE OutputStr, ADDR strEqual
+					INVOKE OutputInt, o11
+
+					INVOKE OutputStr, ADDR strTest
+ 0000068E  BA 00000000			MOV edx, 0
+ 00000693  58				POP eax
+ 00000694  A3 000001D3 R		MOV o1, eax
+ 00000699  59				POP ecx
+ 0000069A  89 0D 000001D7 R		MOV o2, ecx
+ 000006A0  0F AF C1			imul eax, ecx
+ 000006A3  03 D0			ADD edx, eax
+
+ 000006A5  58				POP eax
+ 000006A6  A3 000001DB R		MOV o3, eax
+ 000006AB  59				POP ecx
+ 000006AC  89 0D 000001DF R		MOV o4, ecx
+ 000006B2  0F AF C1			imul eax, ecx
+ 000006B5  03 D0			ADD edx, eax
+
+ 000006B7  58				POP eax
+ 000006B8  A3 000001E3 R		MOV o5, eax
+ 000006BD  59				POP ecx
+ 000006BE  89 0D 000001E7 R		MOV o6, ecx
+ 000006C4  0F AF C1			imul eax, ecx
+ 000006C7  03 D0			ADD edx, eax
+
+ 000006C9  58				POP eax
+ 000006CA  A3 000001EB R		MOV o7, eax
+ 000006CF  59				POP ecx
+ 000006D0  89 0D 000001EF R		MOV o8, ecx
+ 000006D6  0F AF C1			imul eax, ecx
+ 000006D9  03 D0			ADD edx, eax
+
+ 000006DB  89 15 000001FF R		MOV o12, edx
+
+					INVOKE OutputStr, ADDR strTest
+					INVOKE OutputStr, ADDR str21
+					INVOKE OutputInt, o1
+					INVOKE OutputStr, ADDR strTimes
+					INVOKE OutputInt, o2
+					INVOKE OutputStr, ADDR strPlus
+					INVOKE OutputInt, o3
+					INVOKE OutputStr, ADDR strTimes
+					INVOKE OutputInt, o4
+					INVOKE OutputStr, ADDR strPlus
+					INVOKE OutputInt, o5
+					INVOKE OutputStr, ADDR strTimes
+					INVOKE OutputInt, o6
+					INVOKE OutputStr, ADDR strPlus
+					INVOKE OutputInt, o7
+					INVOKE OutputStr, ADDR strTimes
+					INVOKE OutputInt, o8
+					INVOKE OutputStr, ADDR strEqual
+					INVOKE OutputInt, o12
+
+
+					INVOKE OutputStr, ADDR strTest
+ 000007B2  BA 00000000			MOV edx, 0
+ 000007B7  58				POP eax
+ 000007B8  A3 000001D3 R		MOV o1, eax
+ 000007BD  59				POP ecx
+ 000007BE  89 0D 000001D7 R		MOV o2, ecx
+ 000007C4  0F AF C1			imul eax, ecx
+ 000007C7  03 D0			ADD edx, eax
+
+ 000007C9  58				POP eax
+ 000007CA  A3 000001DB R		MOV o3, eax
+ 000007CF  59				POP ecx
+ 000007D0  89 0D 000001DF R		MOV o4, ecx
+ 000007D6  0F AF C1			imul eax, ecx
+ 000007D9  03 D0			ADD edx, eax
+
+ 000007DB  58				POP eax
+ 000007DC  A3 000001E3 R		MOV o5, eax
+ 000007E1  59				POP ecx
+ 000007E2  89 0D 000001E7 R		MOV o6, ecx
+ 000007E8  0F AF C1			imul eax, ecx
+ 000007EB  03 D0			ADD edx, eax
+
+ 000007ED  58				POP eax
+ 000007EE  A3 000001EB R		MOV o7, eax
+ 000007F3  59				POP ecx
+ 000007F4  89 0D 000001EF R		MOV o8, ecx
+ 000007FA  0F AF C1			imul eax, ecx
+ 000007FD  03 D0			ADD edx, eax
+
+ 000007FF  89 15 00000203 R		MOV o13, edx
+
+					INVOKE OutputStr, ADDR strTest
+					INVOKE OutputStr, ADDR str11
+					INVOKE OutputInt, o1
+					INVOKE OutputStr, ADDR strTimes
+					INVOKE OutputInt, o2
+					INVOKE OutputStr, ADDR strPlus
+					INVOKE OutputInt, o3
+					INVOKE OutputStr, ADDR strTimes
+					INVOKE OutputInt, o4
+					INVOKE OutputStr, ADDR strPlus
+					INVOKE OutputInt, o5
+					INVOKE OutputStr, ADDR strTimes
+					INVOKE OutputInt, o6
+					INVOKE OutputStr, ADDR strPlus
+					INVOKE OutputInt, o7
+					INVOKE OutputStr, ADDR strTimes
+					INVOKE OutputInt, o8
+					INVOKE OutputStr, ADDR strEqual
+					INVOKE OutputInt, o13
+
+					INVOKE OutputStr, ADDR strTest
+ 000008D6  BA 00000000			MOV edx, 0
+ 000008DB  58				POP eax
+ 000008DC  A3 000001D3 R		MOV o1, eax
+ 000008E1  59				POP ecx
+ 000008E2  89 0D 000001D7 R		MOV o2, ecx
+ 000008E8  0F AF C1			imul eax, ecx
+ 000008EB  03 D0			ADD edx, eax
+
+ 000008ED  58				POP eax
+ 000008EE  A3 000001DB R		MOV o3, eax
+ 000008F3  59				POP ecx
+ 000008F4  89 0D 000001DF R		MOV o4, ecx
+ 000008FA  0F AF C1			imul eax, ecx
+ 000008FD  03 D0			ADD edx, eax
+
+ 000008FF  58				POP eax
+ 00000900  A3 000001E3 R		MOV o5, eax
+ 00000905  59				POP ecx
+ 00000906  89 0D 000001E7 R		MOV o6, ecx
+ 0000090C  0F AF C1			imul eax, ecx
+ 0000090F  03 D0			ADD edx, eax
+
+ 00000911  58				POP eax
+ 00000912  A3 000001EB R		MOV o7, eax
+ 00000917  59				POP ecx
+ 00000918  89 0D 000001EF R		MOV o8, ecx
+ 0000091E  0F AF C1			imul eax, ecx
+ 00000921  03 D0			ADD edx, eax
+
+ 00000923  89 15 00000207 R		MOV o14, edx
+
+					INVOKE OutputStr, ADDR strTest
+					INVOKE OutputStr, ADDR str01
+					INVOKE OutputInt, o1
+					INVOKE OutputStr, ADDR strTimes
+					INVOKE OutputInt, o2
+					INVOKE OutputStr, ADDR strPlus
+					INVOKE OutputInt, o3
+					INVOKE OutputStr, ADDR strTimes
+					INVOKE OutputInt, o4
+					INVOKE OutputStr, ADDR strPlus
+					INVOKE OutputInt, o5
+					INVOKE OutputStr, ADDR strTimes
+					INVOKE OutputInt, o6
+					INVOKE OutputStr, ADDR strPlus
+					INVOKE OutputInt, o7
+					INVOKE OutputStr, ADDR strTimes
+					INVOKE OutputInt, o8
+					INVOKE OutputStr, ADDR strEqual
+					INVOKE OutputInt, o14
+
+					INVOKE OutputStr, ADDR strTest
+ 000009FA  BA 00000000			MOV edx, 0
+ 000009FF  58				POP eax
+ 00000A00  A3 000001D3 R		MOV o1, eax
+ 00000A05  59				POP ecx
+ 00000A06  89 0D 000001D7 R		MOV o2, ecx
+ 00000A0C  0F AF C1			imul eax, ecx
+ 00000A0F  03 D0			ADD edx, eax
+
+ 00000A11  58				POP eax
+ 00000A12  A3 000001DB R		MOV o3, eax
+ 00000A17  59				POP ecx
+ 00000A18  89 0D 000001DF R		MOV o4, ecx
+ 00000A1E  0F AF C1			imul eax, ecx
+ 00000A21  03 D0			ADD edx, eax
+
+ 00000A23  58				POP eax
+ 00000A24  A3 000001E3 R		MOV o5, eax
+ 00000A29  59				POP ecx
+ 00000A2A  89 0D 000001E7 R		MOV o6, ecx
+ 00000A30  0F AF C1			imul eax, ecx
+ 00000A33  03 D0			ADD edx, eax
+
+ 00000A35  58				POP eax
+ 00000A36  A3 000001EB R		MOV o7, eax
+ 00000A3B  59				POP ecx
+ 00000A3C  89 0D 000001EF R		MOV o8, ecx
+ 00000A42  0F AF C1			imul eax, ecx
+ 00000A45  03 D0			ADD edx, eax
+
+ 00000A47  89 15 0000020B R		MOV o15, edx
+
+					INVOKE OutputStr, ADDR strTest
+					INVOKE OutputStr, ADDR str20
+					INVOKE OutputInt, o1
+					INVOKE OutputStr, ADDR strTimes
+					INVOKE OutputInt, o2
+					INVOKE OutputStr, ADDR strPlus
+					INVOKE OutputInt, o3
+					INVOKE OutputStr, ADDR strTimes
+					INVOKE OutputInt, o4
+					INVOKE OutputStr, ADDR strPlus
+					INVOKE OutputInt, o5
+					INVOKE OutputStr, ADDR strTimes
+					INVOKE OutputInt, o6
+					INVOKE OutputStr, ADDR strPlus
+					INVOKE OutputInt, o7
+					INVOKE OutputStr, ADDR strTimes
+					INVOKE OutputInt, o8
+					INVOKE OutputStr, ADDR strEqual
+					INVOKE OutputInt, o15
+
+					INVOKE OutputStr, ADDR strTest
+ 00000B1E  BA 00000000			MOV edx, 0
+ 00000B23  58				POP eax
+ 00000B24  A3 000001D3 R		MOV o1, eax
+ 00000B29  59				POP ecx
+ 00000B2A  89 0D 000001D7 R		MOV o2, ecx
+ 00000B30  0F AF C1			imul eax, ecx
+ 00000B33  03 D0			ADD edx, eax
+
+ 00000B35  58				POP eax
+ 00000B36  A3 000001DB R		MOV o3, eax
+ 00000B3B  59				POP ecx
+ 00000B3C  89 0D 000001DF R		MOV o4, ecx
+ 00000B42  0F AF C1			imul eax, ecx
+ 00000B45  03 D0			ADD edx, eax
+
+ 00000B47  58				POP eax
+ 00000B48  A3 000001E3 R		MOV o5, eax
+ 00000B4D  59				POP ecx
+ 00000B4E  89 0D 000001E7 R		MOV o6, ecx
+ 00000B54  0F AF C1			imul eax, ecx
+ 00000B57  03 D0			ADD edx, eax
+
+ 00000B59  58				POP eax
+ 00000B5A  A3 000001EB R		MOV o7, eax
+ 00000B5F  59				POP ecx
+ 00000B60  89 0D 000001EF R		MOV o8, ecx
+ 00000B66  0F AF C1			imul eax, ecx
+ 00000B69  03 D0			ADD edx, eax
+
+ 00000B6B  89 15 0000020F R		MOV o16, edx
+
+					INVOKE OutputStr, ADDR strTest
+					INVOKE OutputStr, ADDR str10
+					INVOKE OutputInt, o1
+					INVOKE OutputStr, ADDR strTimes
+					INVOKE OutputInt, o2
+					INVOKE OutputStr, ADDR strPlus
+					INVOKE OutputInt, o3
+					INVOKE OutputStr, ADDR strTimes
+					INVOKE OutputInt, o4
+					INVOKE OutputStr, ADDR strPlus
+					INVOKE OutputInt, o5
+					INVOKE OutputStr, ADDR strTimes
+					INVOKE OutputInt, o6
+					INVOKE OutputStr, ADDR strPlus
+					INVOKE OutputInt, o7
+					INVOKE OutputStr, ADDR strTimes
+					INVOKE OutputInt, o8
+					INVOKE OutputStr, ADDR strEqual
+					INVOKE OutputInt, o16
+
+
+				INVOKE OutputStr, ADDR strTest
+ 00000C42  BA 00000000			MOV edx, 0
+ 00000C47  58				POP eax
+ 00000C48  A3 000001D3 R		MOV o1, eax
+ 00000C4D  59				POP ecx
+ 00000C4E  89 0D 000001D7 R		MOV o2, ecx
+ 00000C54  0F AF C1			imul eax, ecx
+ 00000C57  03 D0			ADD edx, eax
+
+ 00000C59  58				POP eax
+ 00000C5A  A3 000001DB R		MOV o3, eax
+ 00000C5F  59				POP ecx
+ 00000C60  89 0D 000001DF R		MOV o4, ecx
+ 00000C66  0F AF C1			imul eax, ecx
+ 00000C69  03 D0			ADD edx, eax
+
+ 00000C6B  58				POP eax
+ 00000C6C  A3 000001E3 R		MOV o5, eax
+ 00000C71  59				POP ecx
+ 00000C72  89 0D 000001E7 R		MOV o6, ecx
+ 00000C78  0F AF C1			imul eax, ecx
+ 00000C7B  03 D0			ADD edx, eax
+
+ 00000C7D  58				POP eax
+ 00000C7E  A3 000001EB R		MOV o7, eax
+ 00000C83  59				POP ecx
+ 00000C84  89 0D 000001EF R		MOV o8, ecx
+ 00000C8A  0F AF C1			imul eax, ecx
+ 00000C8D  03 D0			ADD edx, eax
+
+ 00000C8F  89 15 00000213 R		MOV o17, edx
+
+					INVOKE OutputStr, ADDR strTest
+					INVOKE OutputStr, ADDR str00
+					INVOKE OutputInt, o1
+					INVOKE OutputStr, ADDR strTimes
+					INVOKE OutputInt, o2
+					INVOKE OutputStr, ADDR strPlus
+					INVOKE OutputInt, o3
+					INVOKE OutputStr, ADDR strTimes
+					INVOKE OutputInt, o4
+					INVOKE OutputStr, ADDR strPlus
+					INVOKE OutputInt, o5
+					INVOKE OutputStr, ADDR strTimes
+					INVOKE OutputInt, o6
+					INVOKE OutputStr, ADDR strPlus
+					INVOKE OutputInt, o7
+					INVOKE OutputStr, ADDR strTimes
+					INVOKE OutputInt, o8
+					INVOKE OutputStr, ADDR strEqual
+					INVOKE OutputInt, o17
+
+				INVOKE OutputStr, ADDR strTest
+				INVOKE OutputStr, ADDR strTest
+				INVOKE OutputStr, ADDR strTest
+
+				INVOKE OutputInt, o17
+				INVOKE OutputStr, ADDR strInputSpace
+				INVOKE OutputInt, o14
+				INVOKE OutputStr, ADDR strInputSpace
+				INVOKE OutputInt, o11
+				INVOKE OutputStr, ADDR strInputSpace
+				INVOKE OutputStr, ADDR strTest
+
+
+				INVOKE OutputInt, o16
+				INVOKE OutputStr, ADDR strInputSpace
+				INVOKE OutputInt, o13
+				INVOKE OutputStr, ADDR strInputSpace
+				INVOKE OutputInt, o10
+				INVOKE OutputStr, ADDR strInputSpace
+				INVOKE OutputStr, ADDR strTest
+
+
+				INVOKE OutputInt, o15
+				INVOKE OutputStr, ADDR strInputSpace
+				INVOKE OutputInt, o12
+				INVOKE OutputStr, ADDR strInputSpace
+				INVOKE OutputInt, o9
+				INVOKE OutputStr, ADDR strInputSpace
+				INVOKE OutputStr, ADDR strTest
+
+
+
+
+
+
+
+
+					INVOKE ExitProcess, 0
+ 00000E5C			Public _start
+				END
+Microsoft (R) Macro Assembler Version 6.11		    08/17/23 19:10:16
+src\Test_p04.asm					     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+FLAT . . . . . . . . . . . . . .	GROUP
+STACK  . . . . . . . . . . . . .	32 Bit	 00001000 DWord	  Stack	  'STACK'	 
+_DATA  . . . . . . . . . . . . .	32 Bit	 00000217 DWord	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 00000E5C DWord	  Public  'CODE'	
+
+
+Procedures,  parameters and locals:
+
+                N a m e                 Type     Value    Attr
+
+$$$$$$00001  . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 00000E5C Private
+  whileBodyI . . . . . . . . . .	L Near	 00000017 _TEXT	
+  whileEndI  . . . . . . . . . .	L Near	 0000002B _TEXT	
+  whileBodyK . . . . . . . . . .	L Near	 00000042 _TEXT	
+  whileEndK  . . . . . . . . . .	L Near	 00000054 _TEXT	
+  stackCondition . . . . . . . .	L Near	 00000073 _TEXT	
+  stackStart . . . . . . . . . .	L Near	 0000007F _TEXT	
+  outOfBoundsC1  . . . . . . . .	L Near	 0000011E _TEXT	
+  setToOneC1 . . . . . . . . . .	L Near	 0000012A _TEXT	
+  endBoundCheckC1  . . . . . . .	L Near	 0000012F _TEXT	
+  outOfBoundsD1  . . . . . . . .	L Near	 00000136 _TEXT	
+  setToOneD1 . . . . . . . . . .	L Near	 00000142 _TEXT	
+  endBoundCheckD1  . . . . . . .	L Near	 00000147 _TEXT	
+  outOfBoundsC2  . . . . . . . .	L Near	 00000257 _TEXT	
+  setToOneC2 . . . . . . . . . .	L Near	 00000263 _TEXT	
+  endBoundCheckC2  . . . . . . .	L Near	 00000268 _TEXT	
+  outOfBoundsD2  . . . . . . . .	L Near	 0000026F _TEXT	
+  setToOneD2 . . . . . . . . . .	L Near	 0000027B _TEXT	
+  endBoundCheckD2  . . . . . . .	L Near	 00000280 _TEXT	
+  outOfBounds4 . . . . . . . . .	L Near	 0000030D _TEXT	
+  endBoundCheck4 . . . . . . . .	L Near	 00000313 _TEXT	
+  stackEnd . . . . . . . . . . .	L Near	 00000318 _TEXT	
+  stackOutputStart . . . . . . .	L Near	 00000318 _TEXT	
+ExitProcess  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+InputInt . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+InputStr . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+OutputFloat8 . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+OutputFloat  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+OutputInt  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+OutputStr  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+@CodeSize  . . . . . . . . . . .	Number	 00000000h   
+@DataSize  . . . . . . . . . . .	Number	 00000000h   
+@Interface . . . . . . . . . . .	Number	 00000000h   
+@Model . . . . . . . . . . . . .	Number	 00000007h   
+@code  . . . . . . . . . . . . .	Text   	 _TEXT
+@data  . . . . . . . . . . . . .	Text   	 FLAT
+@fardata?  . . . . . . . . . . .	Text   	 FLAT
+@fardata . . . . . . . . . . . .	Text   	 FLAT
+@stack . . . . . . . . . . . . .	Text   	 FLAT
+IO_INC . . . . . . . . . . . . .	Text   	 1
+_start . . . . . . . . . . . . .	L Near	 00000000 _TEXT	Public
+a  . . . . . . . . . . . . . . .	DWord	 000001BF _DATA	
+cc . . . . . . . . . . . . . . .	DWord	 000001CF _DATA	
+cutoff . . . . . . . . . . . . .	DWord	 000001B7 _DATA	
+d  . . . . . . . . . . . . . . .	DWord	 000001CB _DATA	
+endBoundCheck4 . . . . . . . . .	L Near	 00000313 _TEXT	
+endBoundCheckC1  . . . . . . . .	L Near	 0000012F _TEXT	
+endBoundCheckC2  . . . . . . . .	L Near	 00000268 _TEXT	
+endBoundCheckD1  . . . . . . . .	L Near	 00000147 _TEXT	
+endBoundCheckD2  . . . . . . . .	L Near	 00000280 _TEXT	
+imageArray . . . . . . . . . . .	DWord	 00000143 _DATA	
+i  . . . . . . . . . . . . . . .	DWord	 000001C3 _DATA	
+kernalArray  . . . . . . . . . .	DWord	 00000183 _DATA	
+k  . . . . . . . . . . . . . . .	DWord	 000001C7 _DATA	
+o10  . . . . . . . . . . . . . .	DWord	 000001F7 _DATA	
+o11  . . . . . . . . . . . . . .	DWord	 000001FB _DATA	
+o12  . . . . . . . . . . . . . .	DWord	 000001FF _DATA	
+o13  . . . . . . . . . . . . . .	DWord	 00000203 _DATA	
+o14  . . . . . . . . . . . . . .	DWord	 00000207 _DATA	
+o15  . . . . . . . . . . . . . .	DWord	 0000020B _DATA	
+o16  . . . . . . . . . . . . . .	DWord	 0000020F _DATA	
+o17  . . . . . . . . . . . . . .	DWord	 00000213 _DATA	
+o1 . . . . . . . . . . . . . . .	DWord	 000001D3 _DATA	
+o2 . . . . . . . . . . . . . . .	DWord	 000001D7 _DATA	
+o3 . . . . . . . . . . . . . . .	DWord	 000001DB _DATA	
+o4 . . . . . . . . . . . . . . .	DWord	 000001DF _DATA	
+o5 . . . . . . . . . . . . . . .	DWord	 000001E3 _DATA	
+o6 . . . . . . . . . . . . . . .	DWord	 000001E7 _DATA	
+o7 . . . . . . . . . . . . . . .	DWord	 000001EB _DATA	
+o8 . . . . . . . . . . . . . . .	DWord	 000001EF _DATA	
+o9 . . . . . . . . . . . . . . .	DWord	 000001F3 _DATA	
+outOfBounds4 . . . . . . . . . .	L Near	 0000030D _TEXT	
+outOfBoundsC1  . . . . . . . . .	L Near	 0000011E _TEXT	
+outOfBoundsC2  . . . . . . . . .	L Near	 00000257 _TEXT	
+outOfBoundsD1  . . . . . . . . .	L Near	 00000136 _TEXT	
+outOfBoundsD2  . . . . . . . . .	L Near	 0000026F _TEXT	
+outputArray  . . . . . . . . . .	DWord	 00000193 _DATA	
+setToOneC1 . . . . . . . . . . .	L Near	 0000012A _TEXT	
+setToOneC2 . . . . . . . . . . .	L Near	 00000263 _TEXT	
+setToOneD1 . . . . . . . . . . .	L Near	 00000142 _TEXT	
+setToOneD2 . . . . . . . . . . .	L Near	 0000027B _TEXT	
+stackCondition . . . . . . . . .	L Near	 00000073 _TEXT	
+stackEnd . . . . . . . . . . . .	L Near	 00000318 _TEXT	
+stackOutputStart . . . . . . . .	L Near	 00000318 _TEXT	
+stackStart . . . . . . . . . . .	L Near	 0000007F _TEXT	
+str00  . . . . . . . . . . . . .	Byte	 000000BC _DATA	
+str01  . . . . . . . . . . . . .	Byte	 000000E9 _DATA	
+str02  . . . . . . . . . . . . .	Byte	 00000116 _DATA	
+str10  . . . . . . . . . . . . .	Byte	 000000CB _DATA	
+str11  . . . . . . . . . . . . .	Byte	 000000F8 _DATA	
+str12  . . . . . . . . . . . . .	Byte	 00000125 _DATA	
+str20  . . . . . . . . . . . . .	Byte	 000000DA _DATA	
+str21  . . . . . . . . . . . . .	Byte	 00000107 _DATA	
+str22  . . . . . . . . . . . . .	Byte	 00000134 _DATA	
+strEqual . . . . . . . . . . . .	Byte	 000000B7 _DATA	
+strHEading . . . . . . . . . . .	Byte	 00000095 _DATA	
+strInputBracket  . . . . . . . .	Byte	 000000AC _DATA	
+strInputCutOff . . . . . . . . .	Byte	 00000079 _DATA	
+strInputExit . . . . . . . . . .	Byte	 00000000 _DATA	
+strInputI  . . . . . . . . . . .	Byte	 0000002B _DATA	
+strInputK  . . . . . . . . . . .	Byte	 00000052 _DATA	
+strInputSpace  . . . . . . . . .	Byte	 000000B1 _DATA	
+strPlus  . . . . . . . . . . . .	Byte	 000000B5 _DATA	
+strTest  . . . . . . . . . . . .	Byte	 000000B9 _DATA	
+strTimes . . . . . . . . . . . .	Byte	 000000B3 _DATA	
+temp . . . . . . . . . . . . . .	DWord	 000001BB _DATA	
+whileBodyI . . . . . . . . . . .	L Near	 00000017 _TEXT	
+whileBodyK . . . . . . . . . . .	L Near	 00000042 _TEXT	
+whileEndI  . . . . . . . . . . .	L Near	 0000002B _TEXT	
+whileEndK  . . . . . . . . . . .	L Near	 00000054 _TEXT	
+
+	   0 Warnings
+	   0 Errors

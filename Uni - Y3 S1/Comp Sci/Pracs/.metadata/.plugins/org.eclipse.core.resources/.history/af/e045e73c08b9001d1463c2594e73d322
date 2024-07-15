@@ -1,0 +1,48 @@
+
+public class Node<T> 
+{
+	Node<T> next;
+	Node<T> prev;
+	T element;
+	//constructor
+	
+	public Node(Node<T> next, Node<T> prev,T element )
+	{
+		setNext(next);
+		setPrev(prev);
+		setElement(element);
+		
+	}
+	
+	//mutators
+	public void setNext(Node<T> next)
+	{
+		this.next = next;
+	}
+	
+	public void setPrev(Node<T> prev)
+	{
+		this.prev = prev;
+	}
+	
+	public void setElement(T element)
+	{
+		this.element = element;
+	}
+	//accessors
+	
+	public Node<T> getNext()
+	{
+		return next;
+	}
+	
+	public Node<T> getPrev()
+	{
+		return prev;
+	}
+	
+	public T getElement()
+	{
+		return element;
+	}
+}

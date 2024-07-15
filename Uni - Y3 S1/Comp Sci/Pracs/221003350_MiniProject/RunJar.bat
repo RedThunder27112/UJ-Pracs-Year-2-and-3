@@ -1,0 +1,1 @@
+java --module-path "C:\javafx-17\lib" --add-modules javafx.base,javafx.controls,javafx.fxml,javafx.graphics,javafx.media -jar "docs\Runnable.jar"

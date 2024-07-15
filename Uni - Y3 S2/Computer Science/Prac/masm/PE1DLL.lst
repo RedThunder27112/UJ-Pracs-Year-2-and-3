@@ -1,0 +1,198 @@
+Microsoft (R) Macro Assembler Version 6.11		    10/17/23 18:35:10
+src\.\PE1DLL.asm					     Page 1 - 1
+
+
+				;	Update all of this information to reflect your own details and the practical
+				;	Author:	Mr A Maganlal
+				;	PE1 DLL starter file
+				.386
+				.MODEL FLAT, stdcall
+				.STACK 4096
+
+				INCLUDE io.inc
+			      C ;
+			      C ; Simple I/O Routines - Version 2
+			      C ;
+			      C 
+			      C IFNDEF IO_INC
+ = 1			      C IO_INC equ <1>
+			      C 
+			      C OutputStr PROTO NEAR32 STDCALL :DWORD
+			      C OutputInt PROTO NEAR32 STDCALL :DWORD
+			      C OutputFloat PROTO NEAR32 STDCALL :DWORD
+			      C OutputFloat8 PROTO NEAR32 STDCALL :QWORD
+			      C InputInt PROTO NEAR32 STDCALL
+			      C InputStr PROTO NEAR32 STDCALL :DWORD, :DWORD
+			      C 
+			      C ELSE
+			      C ENDIF
+			      C 
+ 00000000			.CODE
+
+				; LibMain function tests which action is currently beign performed
+				; The function returns if the DLL is loaded correctly or not.
+				; We avoid the complex logic here for simplicity.
+ 00000000			LibMain proc instance:DWORD, reason:DWORD, unused:DWORD
+ 00000003  B8 00000001			mov eax, 1
+				  ret
+ 0000000C			LibMain ENDP
+
+ 0000000C			aliquotSum PROC NEAR32
+					; Entry code
+ 0000000C  55				PUSH	ebp
+ 0000000D  8B EC			MOV		ebp, esp
+ 0000000F  83 EC 04			SUB esp, 4
+ 00000012  53				PUSH	ebx
+ 00000013  51				PUSH	ecx
+ 00000014  52				PUSH	edx
+ 00000015  9C				PUSHFD
+					
+ 00000016  B9 00000000			MOV ecx, 0
+
+
+ 0000001B  8B 45 08			MOV eax,  [ebp+8]
+ 0000001E  89 45 F8			MOV [ebp-8], eax
+
+ 00000021				startLoop:
+ 00000021  8B 45 F8			MOV eax, [ebp-8]
+ 00000024  48				DEC eax
+ 00000025  89 45 F8			MOV [ebp-8], eax
+
+ 00000028  8B 45 08			MOV eax, [ebp+8]
+ 0000002B  8B 5D F8			MOV ebx, [ebp-8]
+
+ 0000002E  BA 00000000			MOV edx, 0
+
+ 00000033  99				CDQ
+ 00000034  F7 FB			IDIV ebx
+
+
+
+ 00000036  83 FA 00			CMP edx, 0
+ 00000039  7F 03			JG skipflag
+ 0000003B  03 4D F8			ADD ecx, [ebp-8]
+
+
+ 0000003E				skipflag:
+
+ 0000003E  8B 45 F8			MOV eax, [ebp-8]
+
+
+ 00000041  83 F8 01			CMP eax, 1
+
+ 00000044  74 02			JZ endLoop
+ 00000046  75 D9			JNE startLoop
+ 00000048				endLoop:
+
+ 00000048  8B C1			MOV eax, ecx
+					; Exit code
+ 0000004A  9D				POPFD
+ 0000004B  5A				POP		edx
+ 0000004C  59				POP		ecx
+ 0000004D  5B				POP		ebx
+ 0000004E  8B E5			MOV		esp, ebp
+ 00000050  5D				POP		ebp
+ 00000051  C2 0004			RET		4					; params are X bytes
+ 00000054			aliquotSum ENDP
+
+ 00000054			classify PROC NEAR32
+					; Entry code
+ 00000054  55				PUSH	ebp
+ 00000055  8B EC			MOV		ebp, esp
+ 00000057  53				PUSH	ebx
+ 00000058  51				PUSH	ecx
+ 00000059  52				PUSH	edx
+ 0000005A  9C				PUSHFD
+					
+ 0000005B  8B 4D 08			MOV ecx, [ebp+8]
+
+ 0000005E  FF 75 08			PUSH [ebp+8]
+ 00000061  E8 FFFFFFA6			CALL aliquotSum
+
+ 00000066  3B C1			CMP eax, ecx
+ 00000068  7F 04			JG greateZero
+ 0000006A  74 09			JZ zeroFlag
+ 0000006C  EB 0E			JMP smallerZero
+
+ 0000006E				greateZero:
+ 0000006E  B8 00000001			MOV eax, 1
+ 00000073  EB 0C			JMP endFlag
+
+ 00000075				zeroFlag:
+ 00000075  B8 00000000			MOV eax, 0
+ 0000007A  EB 05			JMP endFlag
+
+ 0000007C				smallerZero:
+ 0000007C  B8 FFFFFFFF			MOV eax, -1
+
+ 00000081				endFlag:
+
+					; Exit code
+ 00000081  9D				POPFD
+ 00000082  5A				POP		edx
+ 00000083  59				POP		ecx
+ 00000084  5B				POP		ebx
+ 00000085  8B E5			MOV		esp, ebp
+ 00000087  5D				POP		ebp
+ 00000088  C2 0004			RET		4					; params are X bytes
+ 0000008B			classify ENDP
+
+				end LibMain
+Microsoft (R) Macro Assembler Version 6.11		    10/17/23 18:35:10
+src\.\PE1DLL.asm					     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+FLAT . . . . . . . . . . . . . .	GROUP
+STACK  . . . . . . . . . . . . .	32 Bit	 00001000 DWord	  Stack	  'STACK'	 
+_DATA  . . . . . . . . . . . . .	32 Bit	 00000000 DWord	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 0000008B DWord	  Public  'CODE'	
+
+
+Procedures,  parameters and locals:
+
+                N a m e                 Type     Value    Attr
+
+InputInt . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+InputStr . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+LibMain  . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 0000000C Public STDCALL
+  instance . . . . . . . . . . .	DWord	 bp + 00000008
+  reason . . . . . . . . . . . .	DWord	 bp + 0000000C
+  unused . . . . . . . . . . . .	DWord	 bp + 00000010
+OutputFloat8 . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+OutputFloat  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+OutputInt  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+OutputStr  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+aliquotSum . . . . . . . . . . .	P Near	 0000000C _TEXT	Length= 00000048 Public STDCALL
+  startLoop  . . . . . . . . . .	L Near	 00000021 _TEXT	
+  skipflag . . . . . . . . . . .	L Near	 0000003E _TEXT	
+  endLoop  . . . . . . . . . . .	L Near	 00000048 _TEXT	
+classify . . . . . . . . . . . .	P Near	 00000054 _TEXT	Length= 00000037 Public STDCALL
+  greateZero . . . . . . . . . .	L Near	 0000006E _TEXT	
+  zeroFlag . . . . . . . . . . .	L Near	 00000075 _TEXT	
+  smallerZero  . . . . . . . . .	L Near	 0000007C _TEXT	
+  endFlag  . . . . . . . . . . .	L Near	 00000081 _TEXT	
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+@CodeSize  . . . . . . . . . . .	Number	 00000000h   
+@DataSize  . . . . . . . . . . .	Number	 00000000h   
+@Interface . . . . . . . . . . .	Number	 00000003h   
+@Model . . . . . . . . . . . . .	Number	 00000007h   
+@code  . . . . . . . . . . . . .	Text   	 _TEXT
+@data  . . . . . . . . . . . . .	Text   	 FLAT
+@fardata?  . . . . . . . . . . .	Text   	 FLAT
+@fardata . . . . . . . . . . . .	Text   	 FLAT
+@stack . . . . . . . . . . . . .	Text   	 FLAT
+IO_INC . . . . . . . . . . . . .	Text   	 1
+
+	   0 Warnings
+	   0 Errors

@@ -1,0 +1,564 @@
+Microsoft (R) Macro Assembler Version 6.11		    10/17/23 19:16:25
+src\.\PE2DLL.asm					     Page 1 - 1
+
+
+				;	Update all of this information to reflect your own details and the practical
+				;	Author:	Mr A Maganlal
+				;	PE2 DLL starter file
+				.386
+				.MODEL FLAT, stdcall
+				.STACK 4096
+				INCLUDE io.inc
+			      C ;
+			      C ; Simple I/O Routines - Version 2
+			      C ;
+			      C 
+			      C IFNDEF IO_INC
+ = 1			      C IO_INC equ <1>
+			      C 
+			      C OutputStr PROTO NEAR32 STDCALL :DWORD
+			      C OutputInt PROTO NEAR32 STDCALL :DWORD
+			      C OutputFloat PROTO NEAR32 STDCALL :DWORD
+			      C OutputFloat8 PROTO NEAR32 STDCALL :QWORD
+			      C InputInt PROTO NEAR32 STDCALL
+			      C InputStr PROTO NEAR32 STDCALL :DWORD, :DWORD
+			      C 
+			      C ELSE
+			      C ENDIF
+			      C 
+ 00000000			.DATA
+ 00000000  00000044 [		str2 BYTE 68 DUP (?)
+	    00
+	   ]
+ 00000000			.CODE
+
+				; LibMain function tests which action is currently beign performed
+				; The function returns if the DLL is loaded correctly or not.
+				; We avoid the complex logic here for simplicity.
+ 00000000			LibMain proc instance:DWORD, reason:DWORD, unused:DWORD
+ 00000003  B8 00000001			mov eax, 1
+				  ret
+ 0000000C			LibMain ENDP
+
+ 0000000C			binStringToDecimal PROC NEAR32
+					; Entry code
+ 0000000C  55				PUSH	ebp
+ 0000000D  8B EC			MOV		ebp, esp
+ 0000000F  83 EC 08			SUB esp, 8
+ 00000012  53				PUSH	ebx
+ 00000013  51				PUSH	ecx
+ 00000014  52				PUSH	edx
+ 00000015  9C				PUSHFD
+					
+ 00000016  8B 5D 08			MOV ebx, [ebp+8]
+ 00000019  8B 03			MOV eax, [ebx]
+
+					;;;
+ 0000001B  8B 4D 08			MOV ecx, [ebp+8]
+ 0000001E  BA 00000000			MOV edx, 0
+ 00000023				startLength:
+ 00000023  8A 19			MOV BL, [ecx]
+
+					;go through array till you reach 0 (null)
+ 00000025  42				INC edx
+ 00000026  41				INC ecx
+ 00000027  80 FB 00			CMP BL, 0
+ 0000002A  75 F7			JNE startLength
+
+ 0000002C  8B C2			MOV eax, edx
+ 0000002E  48				DEC eax
+
+ 0000002F  8B C8			MOV ecx, eax
+					;
+					;49=1
+					;49=0
+ 00000031  8B 5D 08			MOV ebx, [ebp+8]
+ 00000034  B8 00000000			MOV eax, 0
+ 00000039  89 45 FC			MOV [ebp-4], eax
+
+ 0000003C				startLoop2:
+
+ 0000003C  8A 13			MOV DL, [ebx]
+ 0000003E  80 FA 31			CMP DL, 49
+ 00000041  74 07			JE loopOne
+ 00000043  80 FA 30			CMP DL, 48
+ 00000046  74 29			JE endinnerLoop
+ 00000048  EB 30			JMP binFalse
+
+ 0000004A				loopOne:
+					
+ 0000004A  8B C1			MOV eax, ecx
+ 0000004C  48				DEC eax
+
+ 0000004D  83 F8 00			CMP eax, 0
+ 00000050  74 02			JE	isOne
+ 00000052  EB 0A			JMP isOneN
+
+ 00000054				isOne:
+ 00000054  B8 00000001			MOV eax, 1
+ 00000059  01 45 FC			ADD [ebp-4], eax
+ 0000005C  EB 13			JMP endinnerLoop
+ 0000005E				isOneN:
+
+ 0000005E  8B D0			MOV edx, eax
+ 00000060  B8 00000001			MOV eax, 1
+
+ 00000065				innerLoop:
+ 00000065  6B C0 02			IMUL eax, 2
+ 00000068  4A				DEC edx
+ 00000069  83 FA 00			CMP edx, 0
+ 0000006C  7F F7			JG innerLoop
+ 0000006E  01 45 FC			ADD [ebp-4], eax
+
+
+
+ 00000071				endinnerLoop:
+
+ 00000071  43				INC ebx
+ 00000072  49				DEC ecx
+ 00000073  83 F9 00			CMP ecx, 0
+ 00000076  75 C4			JNZ startLoop2
+
+ 00000078  EB 08			JMP binEnd
+ 0000007A				binFalse:
+ 0000007A  B8 FFFFFFFF			MOV eax, -1
+ 0000007F  89 45 FC			MOV [ebp-4], eax
+ 00000082				binEnd:
+
+ 00000082  8B 45 FC			MOV eax,[ebp-4]
+					; Exit code
+ 00000085  9D				POPFD
+ 00000086  5A				POP		edx
+ 00000087  59				POP		ecx
+ 00000088  5B				POP		ebx
+ 00000089  8B E5			MOV		esp, ebp
+ 0000008B  5D				POP		ebp
+ 0000008C  C2 0004			RET		4					; params are X bytes
+ 0000008F			binStringToDecimal ENDP
+
+
+
+
+ 0000008F			hexStringToDecimal PROC NEAR32
+					; Entry code
+ 0000008F  55				PUSH	ebp
+ 00000090  8B EC			MOV		ebp, esp
+ 00000092  83 EC 08			SUB esp, 8
+ 00000095  53				PUSH	ebx
+ 00000096  51				PUSH	ecx
+ 00000097  52				PUSH	edx
+ 00000098  9C				PUSHFD
+
+ 00000099  8B 5D 08			MOV ebx, [ebp+8]
+ 0000009C  8B 03			MOV eax, [ebx]
+
+					;;;
+ 0000009E  8B 4D 08			MOV ecx, [ebp+8]
+ 000000A1  BA 00000000			MOV edx, 0
+ 000000A6				startLength:
+ 000000A6  8A 19			MOV BL, [ecx]
+
+					;go through array till you reach 0 (null)
+ 000000A8  42				INC edx
+ 000000A9  41				INC ecx
+ 000000AA  80 FB 00			CMP BL, 0
+ 000000AD  75 F7			JNE startLength
+
+ 000000AF  8B C2			MOV eax, edx
+ 000000B1  48				DEC eax
+
+ 000000B2  8B C8			MOV ecx, eax
+					;
+					;49=1
+					;49=0
+ 000000B4  8B 45 08			MOV eax, [ebp+8]
+ 000000B7  89 45 F8		MOV [ebp-8],eax
+ 000000BA  8D 1D 00000000 R		LEA ebx, str2
+ 000000C0				startLoop:
+
+
+
+
+
+ 000000C0  83 F9 00			CMP ecx, 0
+ 000000C3  0F 84 0000027E		JE endLoop
+ 000000C9  49				DEC ecx
+ 000000CA  8B 45 F8			MOV eax, [ebp-8]
+ 000000CD  8A 10			MOV DL, [eax]
+ 000000CF  40				INC eax
+ 000000D0  89 45 F8			MOV [ebp-8],eax
+
+
+ 000000D3  80 FA 30			CMP DL, 48
+ 000000D6  0F 84 0000008C		JE is48
+
+ 000000DC  80 FA 31			CMP DL, 49
+ 000000DF  0F 84 00000099		JE is49
+
+ 000000E5  80 FA 32				CMP DL, 50
+ 000000E8  0F 84 000000AB		JE is50
+
+ 000000EE  80 FA 33				CMP DL, 51
+ 000000F1  0F 84 000000C2		JE is51
+
+ 000000F7  80 FA 34				CMP DL, 52
+ 000000FA  0F 84 000000D4		JE is52
+
+ 00000100  80 FA 35				CMP DL, 53
+ 00000103  0F 84 000000EB		JE is53
+
+ 00000109  80 FA 36				CMP DL, 54
+ 0000010C  0F 84 00000107		JE is54
+
+ 00000112  80 FA 37				CMP DL, 55
+ 00000115  0F 84 0000011E		JE is55
+
+ 0000011B  80 FA 38				CMP DL, 56
+ 0000011E  0F 84 00000130		JE is56
+
+ 00000124  80 FA 39			CMP DL, 57
+ 00000127  0F 84 00000142		JE is57
+
+ 0000012D  80 FA 41			CMP DL, 65
+ 00000130  0F 84 00000159		JE is65
+
+ 00000136  80 FA 42				CMP DL, 66
+ 00000139  0F 84 00000175		JE is66
+
+ 0000013F  80 FA 43				CMP DL, 67
+ 00000142  0F 84 0000018C		JE is67
+
+ 00000148  80 FA 44				CMP DL, 68
+ 0000014B  0F 84 0000019E		JE is68
+
+ 00000151  80 FA 45				CMP DL, 69
+ 00000154  0F 84 000001B5		JE is69
+
+ 0000015A  80 FA 46			CMP DL, 70
+ 0000015D  0F 84 000001C7		JE is70
+
+ 00000163  E9 000001D8			JMP nada
+
+					
+ 00000168				is48:
+ 00000168  B8 00000030			MOV eax, 48
+ 0000016D  89 03			MOV [ebx], eax
+ 0000016F  43				INC ebx
+ 00000170  89 03			MOV [ebx], eax
+ 00000172  43				INC ebx
+ 00000173  89 03			MOV [ebx], eax
+ 00000175  43				INC ebx
+ 00000176  89 03			MOV [ebx], eax
+ 00000178  43				INC ebx
+ 00000179  E9 FFFFFF42		JMP startLoop
+ 0000017E				is49:
+ 0000017E  B8 00000030			MOV eax, 48
+ 00000183  89 03				MOV [ebx], eax
+ 00000185  43				INC ebx
+ 00000186  89 03			MOV [ebx], eax
+ 00000188  43				INC ebx
+ 00000189  89 03			MOV [ebx], eax
+ 0000018B  43				INC ebx
+ 0000018C  B8 00000031			MOV eax, 49
+ 00000191  89 03			MOV [ebx], eax
+ 00000193  43				INC ebx
+ 00000194  E9 FFFFFF27		JMP startLoop
+ 00000199				is50:
+ 00000199  B8 00000030			MOV eax, 48
+ 0000019E  89 03			MOV [ebx], eax
+ 000001A0  43				INC ebx
+ 000001A1  89 03			MOV [ebx], eax
+ 000001A3  43				INC ebx
+ 000001A4  B8 00000031			MOV eax, 49
+ 000001A9  89 03			MOV [ebx], eax
+ 000001AB  43				INC ebx
+ 000001AC  B8 00000030			MOV eax, 48
+ 000001B1  89 03			MOV [ebx], eax
+ 000001B3  43				INC ebx
+ 000001B4  E9 FFFFFF07			JMP startLoop
+ 000001B9				is51:
+ 000001B9  B8 00000030			MOV eax, 48
+ 000001BE  89 03				MOV [ebx], eax
+ 000001C0  43				INC ebx
+ 000001C1  89 03			MOV [ebx], eax
+ 000001C3  43				INC ebx
+ 000001C4  B8 00000031			MOV eax, 49
+ 000001C9  89 03			MOV [ebx], eax
+ 000001CB  43				INC ebx
+ 000001CC  89 03			MOV [ebx], eax
+ 000001CE  43				INC ebx
+ 000001CF  E9 FFFFFEEC		JMP startLoop
+ 000001D4				is52:
+ 000001D4  B8 00000030			MOV eax, 48
+ 000001D9  89 03			MOV [ebx], eax
+ 000001DB  43				INC ebx
+ 000001DC  B8 00000031			MOV eax, 49
+ 000001E1  89 03			MOV [ebx], eax
+ 000001E3  B8 00000030			MOV eax, 48
+ 000001E8  43				INC ebx
+ 000001E9  89 03			MOV [ebx], eax
+ 000001EB  43				INC ebx
+ 000001EC  89 03			MOV [ebx], eax
+ 000001EE  43				INC ebx
+ 000001EF  E9 FFFFFECC			JMP startLoop
+ 000001F4				is53:
+ 000001F4  B8 00000030		MOV eax, 48
+ 000001F9  89 03			MOV [ebx], eax
+ 000001FB  43				INC ebx
+ 000001FC  B8 00000031			MOV eax, 49
+ 00000201  89 03			MOV [ebx], eax
+ 00000203  43				INC ebx
+ 00000204  B8 00000030			MOV eax, 48
+ 00000209  89 03			MOV [ebx], eax
+ 0000020B  43				INC ebx
+ 0000020C  B8 00000031			MOV eax, 49
+ 00000211  89 03			MOV [ebx], eax
+ 00000213  43				INC ebx
+
+
+ 00000214  E9 FFFFFEA7		JMP startLoop
+ 00000219				is54:
+ 00000219  B8 00000030		MOV eax, 48
+ 0000021E  89 03				MOV [ebx], eax
+ 00000220  43				INC ebx
+ 00000221  B8 00000031			MOV eax, 49
+ 00000226  89 03			MOV [ebx], eax
+ 00000228  43				INC ebx
+ 00000229  89 03			MOV [ebx], eax
+ 0000022B  43				INC ebx
+ 0000022C  B8 00000030			MOV eax, 48
+ 00000231  89 03			MOV [ebx], eax
+ 00000233  43				INC ebx
+ 00000234  E9 FFFFFE87		JMP startLoop
+ 00000239				is55:
+ 00000239  B8 00000030			MOV eax, 48
+ 0000023E  89 03				MOV [ebx], eax
+ 00000240  43				INC ebx
+ 00000241  B8 00000031				MOV eax, 49
+ 00000246  89 03			MOV [ebx], eax
+ 00000248  43				INC ebx
+ 00000249  89 03			MOV [ebx], eax
+ 0000024B  43				INC ebx
+ 0000024C  89 03			MOV [ebx], eax
+ 0000024E  43				INC ebx
+ 0000024F  E9 FFFFFE6C		JMP startLoop
+ 00000254				is56:
+ 00000254  B8 00000031		MOV eax, 49
+ 00000259  89 03				MOV [ebx], eax
+ 0000025B  43				INC ebx
+ 0000025C  B8 00000030			MOV eax, 48
+ 00000261  89 03			MOV [ebx], eax
+ 00000263  43				INC ebx
+ 00000264  89 03			MOV [ebx], eax
+ 00000266  43				INC ebx
+ 00000267  89 03			MOV [ebx], eax
+ 00000269  43				INC ebx
+ 0000026A  E9 FFFFFE51		JMP startLoop
+ 0000026F				is57:
+
+ 0000026F  B8 00000031			MOV eax, 49
+ 00000274  89 03				MOV [ebx], eax
+ 00000276  43				INC ebx
+ 00000277  B8 00000030			MOV eax, 48
+ 0000027C  89 03			MOV [ebx], eax
+ 0000027E  43				INC ebx
+ 0000027F  89 03			MOV [ebx], eax
+ 00000281  43				INC ebx
+ 00000282  B8 00000031			MOV eax, 49
+ 00000287  89 03			MOV [ebx], eax
+ 00000289  43				INC ebx
+ 0000028A  E9 FFFFFE31		JMP startLoop
+ 0000028F				is65:
+
+ 0000028F  B8 00000031			MOV eax, 49
+ 00000294  89 03				MOV [ebx], eax
+ 00000296  43				INC ebx
+ 00000297  B8 00000030			MOV eax, 48
+ 0000029C  89 03			MOV [ebx], eax
+ 0000029E  43				INC ebx
+ 0000029F  B8 00000031			MOV eax, 49
+ 000002A4  89 03			MOV [ebx], eax
+ 000002A6  43				INC ebx
+ 000002A7  B8 00000030			MOV eax, 48
+ 000002AC  89 03			MOV [ebx], eax
+ 000002AE  43				INC ebx
+ 000002AF  E9 FFFFFE0C		JMP startLoop
+ 000002B4				is66:
+
+ 000002B4  B8 00000031			MOV eax, 49
+ 000002B9  89 03				MOV [ebx], eax
+ 000002BB  43				INC ebx
+ 000002BC  B8 00000030			MOV eax, 48
+ 000002C1  89 03			MOV [ebx], eax
+ 000002C3  43				INC ebx
+ 000002C4  B8 00000031			MOV eax, 49
+ 000002C9  89 03			MOV [ebx], eax
+ 000002CB  43				INC ebx
+ 000002CC  89 03			MOV [ebx], eax
+ 000002CE  43				INC ebx
+ 000002CF  E9 FFFFFDEC		JMP startLoop
+ 000002D4				is67:
+
+ 000002D4  B8 00000031			MOV eax, 49
+ 000002D9  89 03				MOV [ebx], eax
+ 000002DB  43				INC ebx
+ 000002DC  89 03			MOV [ebx], eax
+ 000002DE  43				INC ebx
+ 000002DF  B8 00000030			MOV eax, 48
+ 000002E4  89 03			MOV [ebx], eax
+ 000002E6  43				INC ebx
+ 000002E7  89 03			MOV [ebx], eax
+ 000002E9  43				INC ebx
+					
+ 000002EA  E9 FFFFFDD1		JMP startLoop
+ 000002EF				is68:
+ 000002EF  B8 00000031			MOV eax, 49
+ 000002F4  89 03				MOV [ebx], eax
+ 000002F6  43				INC ebx
+ 000002F7  89 03			MOV [ebx], eax
+ 000002F9  43				INC ebx
+ 000002FA  B8 00000030			MOV eax, 48
+ 000002FF  89 03			MOV [ebx], eax
+ 00000301  43				INC ebx
+ 00000302  B8 00000031			MOV eax, 49
+ 00000307  89 03			MOV [ebx], eax
+ 00000309  43				INC ebx
+
+ 0000030A  E9 FFFFFDB1		JMP startLoop
+ 0000030F				is69:
+ 0000030F  B8 00000031		MOV eax, 49
+					
+ 00000314  89 03				MOV [ebx], eax
+ 00000316  43				INC ebx
+ 00000317  89 03			MOV [ebx], eax
+ 00000319  43				INC ebx
+ 0000031A  89 03			MOV [ebx], eax
+ 0000031C  43				INC ebx
+ 0000031D  B8 00000030			MOV eax, 48
+ 00000322  89 03			MOV [ebx], eax
+ 00000324  43				INC ebx
+ 00000325  E9 FFFFFD96		JMP startLoop
+ 0000032A				is70:
+ 0000032A  B8 00000031		MOV eax, 49
+ 0000032F  89 03					MOV [ebx], eax
+ 00000331  43				INC ebx
+ 00000332  89 03			MOV [ebx], eax
+ 00000334  43				INC ebx
+ 00000335  89 03			MOV [ebx], eax
+ 00000337  43				INC ebx
+ 00000338  89 03			MOV [ebx], eax
+ 0000033A  43				INC ebx
+ 0000033B  E9 FFFFFD80		JMP startLoop
+ 00000340				nada:
+ 00000340  B8 FFFFFFFF			MOV eax, -1
+ 00000345  EB 0C			JMP endLoop2
+
+ 00000347				endLoop:
+					
+ 00000347  8D 1D 00000000 R		LEA ebx, str2
+
+					
+
+ 0000034D  53				PUSH ebx
+
+					
+ 0000034E  E8 FFFFFCB9			CALL binStringToDecimal
+
+
+ 00000353				endLoop2:
+
+					
+
+					; Exit code
+ 00000353  9D				POPFD
+ 00000354  5A				POP		edx
+ 00000355  59				POP		ecx
+ 00000356  5B				POP		ebx
+ 00000357  8B E5			MOV		esp, ebp
+ 00000359  5D				POP		ebp
+ 0000035A  C2 0004			RET		4					; params are X bytes
+ 0000035D			hexStringToDecimal ENDP
+
+				end LibMain
+Microsoft (R) Macro Assembler Version 6.11		    10/17/23 19:16:25
+src\.\PE2DLL.asm					     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+FLAT . . . . . . . . . . . . . .	GROUP
+STACK  . . . . . . . . . . . . .	32 Bit	 00001000 DWord	  Stack	  'STACK'	 
+_DATA  . . . . . . . . . . . . .	32 Bit	 00000044 DWord	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 0000035D DWord	  Public  'CODE'	
+
+
+Procedures,  parameters and locals:
+
+                N a m e                 Type     Value    Attr
+
+InputInt . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+InputStr . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+LibMain  . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 0000000C Public STDCALL
+  instance . . . . . . . . . . .	DWord	 bp + 00000008
+  reason . . . . . . . . . . . .	DWord	 bp + 0000000C
+  unused . . . . . . . . . . . .	DWord	 bp + 00000010
+OutputFloat8 . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+OutputFloat  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+OutputInt  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+OutputStr  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+binStringToDecimal . . . . . . .	P Near	 0000000C _TEXT	Length= 00000083 Public STDCALL
+  startLength  . . . . . . . . .	L Near	 00000023 _TEXT	
+  startLoop2 . . . . . . . . . .	L Near	 0000003C _TEXT	
+  loopOne  . . . . . . . . . . .	L Near	 0000004A _TEXT	
+  isOne  . . . . . . . . . . . .	L Near	 00000054 _TEXT	
+  isOneN . . . . . . . . . . . .	L Near	 0000005E _TEXT	
+  innerLoop  . . . . . . . . . .	L Near	 00000065 _TEXT	
+  endinnerLoop . . . . . . . . .	L Near	 00000071 _TEXT	
+  binFalse . . . . . . . . . . .	L Near	 0000007A _TEXT	
+  binEnd . . . . . . . . . . . .	L Near	 00000082 _TEXT	
+hexStringToDecimal . . . . . . .	P Near	 0000008F _TEXT	Length= 000002CE Public STDCALL
+  startLength  . . . . . . . . .	L Near	 000000A6 _TEXT	
+  startLoop  . . . . . . . . . .	L Near	 000000C0 _TEXT	
+  is48 . . . . . . . . . . . . .	L Near	 00000168 _TEXT	
+  is49 . . . . . . . . . . . . .	L Near	 0000017E _TEXT	
+  is50 . . . . . . . . . . . . .	L Near	 00000199 _TEXT	
+  is51 . . . . . . . . . . . . .	L Near	 000001B9 _TEXT	
+  is52 . . . . . . . . . . . . .	L Near	 000001D4 _TEXT	
+  is53 . . . . . . . . . . . . .	L Near	 000001F4 _TEXT	
+  is54 . . . . . . . . . . . . .	L Near	 00000219 _TEXT	
+  is55 . . . . . . . . . . . . .	L Near	 00000239 _TEXT	
+  is56 . . . . . . . . . . . . .	L Near	 00000254 _TEXT	
+  is57 . . . . . . . . . . . . .	L Near	 0000026F _TEXT	
+  is65 . . . . . . . . . . . . .	L Near	 0000028F _TEXT	
+  is66 . . . . . . . . . . . . .	L Near	 000002B4 _TEXT	
+  is67 . . . . . . . . . . . . .	L Near	 000002D4 _TEXT	
+  is68 . . . . . . . . . . . . .	L Near	 000002EF _TEXT	
+  is69 . . . . . . . . . . . . .	L Near	 0000030F _TEXT	
+  is70 . . . . . . . . . . . . .	L Near	 0000032A _TEXT	
+  nada . . . . . . . . . . . . .	L Near	 00000340 _TEXT	
+  endLoop  . . . . . . . . . . .	L Near	 00000347 _TEXT	
+  endLoop2 . . . . . . . . . . .	L Near	 00000353 _TEXT	
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+@CodeSize  . . . . . . . . . . .	Number	 00000000h   
+@DataSize  . . . . . . . . . . .	Number	 00000000h   
+@Interface . . . . . . . . . . .	Number	 00000003h   
+@Model . . . . . . . . . . . . .	Number	 00000007h   
+@code  . . . . . . . . . . . . .	Text   	 _TEXT
+@data  . . . . . . . . . . . . .	Text   	 FLAT
+@fardata?  . . . . . . . . . . .	Text   	 FLAT
+@fardata . . . . . . . . . . . .	Text   	 FLAT
+@stack . . . . . . . . . . . . .	Text   	 FLAT
+IO_INC . . . . . . . . . . . . .	Text   	 1
+str2 . . . . . . . . . . . . . .	Byte	 00000000 _DATA	
+
+	   0 Warnings
+	   0 Errors

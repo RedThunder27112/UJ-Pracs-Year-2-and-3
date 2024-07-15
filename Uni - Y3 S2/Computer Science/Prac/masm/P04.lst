@@ -1,0 +1,534 @@
+Microsoft (R) Macro Assembler Version 6.11		    08/17/23 17:52:59
+src\P04.asm						     Page 1 - 1
+
+
+				;	Author:     221003350 Ariel Sischy
+				;	Computer Science 3B - P04
+				.386
+				.MODEL FLAT ; Flat memory model
+				.STACK 4096 ; 4096 bytes
+
+				INCLUDE io.inc ; Directive to use the IO Library
+			      C ;
+			      C ; Simple I/O Routines - Version 2
+			      C ;
+			      C 
+			      C IFNDEF IO_INC
+ = 1			      C IO_INC equ <1>
+			      C 
+			      C OutputStr PROTO NEAR32 STDCALL :DWORD
+			      C OutputInt PROTO NEAR32 STDCALL :DWORD
+			      C OutputFloat PROTO NEAR32 STDCALL :DWORD
+			      C OutputFloat8 PROTO NEAR32 STDCALL :QWORD
+			      C InputInt PROTO NEAR32 STDCALL
+			      C InputStr PROTO NEAR32 STDCALL :DWORD, :DWORD
+			      C 
+			      C ELSE
+			      C ENDIF
+			      C 
+
+				; Exit function
+				ExitProcess PROTO NEAR32 stdcall, dwExitCode:DWORD
+
+				; The data section stores all global variables
+ 00000000			.DATA
+
+
+
+				;string user input messages
+ 00000000 50 6C 65 61 73	strInputExit BYTE "Please enter 0 to exit, or 1 to continue: ",0
+	   65 20 65 6E 74
+	   65 72 20 30 20
+	   74 6F 20 65 78
+	   69 74 2C 20 6F
+	   72 20 31 20 74
+	   6F 20 63 6F 6E
+	   74 69 6E 75 65
+	   3A 20 00
+ 0000002B 50 6C 65 61 73	strInputI BYTE "Please enter number for I (row col) ( ",0
+	   65 20 65 6E 74
+	   65 72 20 6E 75
+	   6D 62 65 72 20
+	   66 6F 72 20 49
+	   20 28 72 6F 77
+	   20 63 6F 6C 29
+	   20 28 20 00
+ 00000052 50 6C 65 61 73	strInputK BYTE "Please enter number for K (row col) ( ",0
+	   65 20 65 6E 74
+	   65 72 20 6E 75
+	   6D 62 65 72 20
+	   66 6F 72 20 4B
+	   20 28 72 6F 77
+	   20 63 6F 6C 29
+	   20 28 20 00
+ 00000079 50 6C 65 61 73	strInputCutOff BYTE "Please enter cutoff value: ",0
+	   65 20 65 6E 74
+	   65 72 20 63 75
+	   74 6F 66 66 20
+	   76 61 6C 75 65
+	   3A 20 00
+
+ 00000095 20 29 3A 20 00	strInputBracket BYTE " ): ", 0
+ 0000009A 20 00			strInputSpace BYTE " ", 0
+
+ 0000009C 4F 75 74 70 75	strTest BYTE "Output: ",10, 0
+	   74 3A 20 0A 00
+
+				;arrays
+ 000000A6  00000010 [		imageArray DWORD 16 DUP (?)
+	    00000000
+	   ]
+ 000000E6  00000004 [		kernalArray DWORD 4 DUP (?)
+	    00000000
+	   ]
+ 000000F6  00000009 [		outputArray DWORD 9 DUP (?)
+	    00000000
+	   ]
+
+				;numbers
+ 0000011A 00000000		cutoff DWORD ?
+
+ 0000011E 00000000		temp DWORD ?
+
+
+ 00000000			.CODE
+ 00000000			_start:
+ 00000000				
+					;set ecx variable for start
+ 00000000  B9 00000001			MOV ecx, 1
+
+ 00000005				whileLoopCondition: ; while(ecx != 0)
+ 00000005  83 F9 00			CMP ecx, 0;check if loop has ended
+ 00000008  0F 84 000001F8		JZ whileLoopEnd
+ 0000000E				whileLoopBody:
+
+					;Msg asking to for cutoff
+					INVOKE OutputStr, ADDR strInputCutoff
+					INVOKE InputInt
+ 0000001D  A3 0000011A R		MOV cutoff, eax
+
+
+					;-----------------------------;
+					;Block for fulling I in while Loop - START
+					;------------------------------;
+ 00000022  B9 00000010			MOV ecx, 16 ; size of array
+ 00000027  BA 00000001			MOV edx, 1 ; row
+ 0000002C  BE 00000001			MOV esi, 1 ; col
+
+ 00000031  8D 1D 000000A6 R		LEA ebx, imageArray ;load address of imageArray
+ 00000037  E3 38			JECXZ whileEndI ; if ecx is zero, error/end loop
+
+ 00000039				whileBodyI:
+
+					;Msg asking to for I value
+
+					INVOKE OutputStr, ADDR strInputI
+					INVOKE OutputInt, edx
+					INVOKE OutputStr, ADDR strInputSpace
+					INVOKE OutputInt, esi
+					INVOKE OutputStr, ADDR strInputBracket
+					INVOKE InputInt
+ 00000068  89 03			MOV [ebx], eax;move user input to array
+
+ 0000006A  42				INC edx
+ 0000006B  4E				DEC esi
+
+ 0000006C  83 C3 04			ADD ebx, 4 ; as DWORD, size 4
+ 0000006F  E2 C8			LOOP whileBodyI
+
+ 00000071				whileEndI:
+					;-----------------------------;
+					;Block for fulling I in while Loop - END
+					;------------------------------;
+
+
+					;-----------------------------;
+					;Block for fulling K in while Loop - START
+					;------------------------------;
+ 00000071  B9 00000004			MOV ecx, 4
+
+ 00000076  8D 1D 000000E6 R		LEA ebx, kernalArray ;load address of kernalArray
+ 0000007C  E3 3B			JECXZ whileEndK ; if ecx is zero, error/end loop
+
+ 0000007E				whileBodyK:
+
+
+ 0000007E  BA 00000001			MOV edx, 1
+					;Msg asking to for K value
+					INVOKE OutputStr, ADDR strInputK
+					INVOKE OutputInt, edx
+					INVOKE OutputStr, ADDR strInputSpace
+					INVOKE OutputInt, edx
+					INVOKE OutputStr, ADDR strInputBracket
+					INVOKE InputInt
+ 000000B2  89 03			MOV [ebx], eax;move user input to array
+
+ 000000B4  83 C3 04			ADD ebx, 4 ; as DWORD, size 4
+ 000000B7  E2 C5			LOOP whileBodyK
+
+ 000000B9				whileEndK:
+					;-----------------------------;
+					;Block for fulling K in while Loop - END
+					;------------------------------;
+
+					;-----------------------------;
+					;Block for adding K and I to stack - start
+					;------------------------------;
+					;MOV ecx 25; 16 + 9 = 25 size of stack
+ 000000B9  55				PUSH ebp
+ 000000BA  8B EC			MOV ebp, esp ;create stack frame
+ 000000BC  81 EC 00000120		SUB esp, 288; reserve 8*9*4=288 DWORDS on stack 
+
+ 000000C2  B9 00000000			MOV ecx, 0 ;row
+ 000000C7  BA 00000000			MOV edx, 0 ; col
+
+ 000000CC  89 25 0000011E R		MOV temp, esp
+ 000000D2  81 05 0000011E R		ADD temp, -288
+	   FFFFFEE0
+ 000000DC  EB 0C			JMP stackStart
+ 000000DE				stackCondition:
+ 000000DE  3B 25 0000011E R		CMP esp, temp ;while(esp > 0)
+					
+ 000000E4  0F 84 000000D5		JZ stackEnd
+ 000000EA				stackStart:
+					
+
+
+					
+					;calc to get row,col of I array
+ 000000EA  8B C1			MOV eax, ecx ; eax = row
+ 000000EC  6B C0 04			IMUL eax, 4 ; eax = row*numCol
+ 000000EF  03 C2			ADD eax, edx; eax = row*numCol + col
+
+ 000000F1  6B C0 04			IMUL eax, 4 ; as dword is size 4
+
+					;move a value from I array to stack
+ 000000F4  8D 1D 000000A6 R		LEA ebx, imageArray ;load address of imageArray
+ 000000FA  03 D8			ADD ebx, eax ; as DWORD, size 4.... set size to what i want
+ 000000FC  FF 33			PUSH [ebx] ; add the I value from array to stack
+
+					;----------------------------
+					;BLOCK TO CHECK ROW COL BOUND START
+					;----------------------------
+					;store edx and ecx
+ 000000FE  8B F1			MOV esi, ecx
+ 00000100  8B FA			MOV edi, edx
+					;if to check if row is in 0-1 bound
+ 00000102  83 F9 02			CMP ecx, 2
+ 00000105  74 02			JZ outOfBoundsC1 ; if ecx >= 2
+ 00000107  EB 11			JMP endBoundCheckC1
+ 00000109				outOfBoundsC1:
+ 00000109  83 F9 03			CMP ecx, 3 ; if ecx >= 3
+ 0000010C  74 07			JZ setToOneC1
+ 0000010E  B9 00000000			MOV ecx, 0
+ 00000113  EB 05			JMP endBoundCheckC1
+
+ 00000115				setToOneC1:
+ 00000115  B9 00000001			MOV ecx, 1
+
+ 0000011A				endBoundCheckC1:
+
+ 0000011A  83 FA 02			CMP edx, 2
+ 0000011D  74 02			JZ outOfBoundsD1 ; if ecx >= 2
+ 0000011F  EB 11			JMP endBoundCheckD1
+ 00000121				outOfBoundsD1:
+ 00000121  83 FA 03			CMP edx, 3 ; if ecx >= 3
+ 00000124  74 07			JZ setToOneD1
+ 00000126  BA 00000000			MOV edx, 0
+ 0000012B  EB 05			JMP endBoundCheckD1
+
+ 0000012D				setToOneD1:
+ 0000012D  BA 00000001			MOV edx, 1
+
+ 00000132				endBoundCheckD1:
+					;----------------------------
+					;BLOCK TO CHECK ROW COL BOUND END
+					;----------------------------
+
+
+
+					;calc to get row,col of K array
+ 00000132  8B C1			MOV eax, ecx ; eax = row
+ 00000134  6B C0 04			IMUL eax, 4 ; eax = row*numCol
+ 00000137  03 C2			ADD eax, edx; eax = row*numCol + col
+
+ 00000139  6B C0 04			IMUL eax, 4 ; as dword is size 4
+
+					;move a value from K array to stack
+ 0000013C  8D 1D 000000E6 R		LEA ebx, kernalArray ;load address of imageArray
+ 00000142  03 D8			ADD ebx, eax ; as DWORD, size 4.... set size to what i want
+ 00000144  FF 33			PUSH [ebx] ; add the K value from array to stack
+
+ 00000146  8B D7			MOV edx, edi ;reset values
+ 00000148  8B CE			MOV ecx, esi
+
+
+					;Now do the same as above, but with col+1
+ 0000014A  42				INC edx
+
+					;calc to get row,col of I array
+ 0000014B  8B C1			MOV eax, ecx ; eax = row
+ 0000014D  6B C0 04			IMUL eax, 4 ; eax = row*numCol
+ 00000150  03 C2			ADD eax, edx; eax = row*numCol + col
+
+ 00000152  6B C0 04			IMUL eax, 4 ; as dword is size 4
+
+					;move a value from I array to stack
+ 00000155  8D 1D 000000A6 R		LEA ebx, imageArray ;load address of imageArray
+ 0000015B  03 D8			ADD ebx, eax ; as DWORD, size 4.... set size to what i want
+ 0000015D  FF 33			PUSH [ebx] ; add the I value from array to stack
+
+
+					;----------------------------
+					;BLOCK TO CHECK ROW COL BOUND START
+					;----------------------------
+					;store edx and ecx
+ 0000015F  8B F1			MOV esi, ecx
+ 00000161  8B FA			MOV edi, edx
+					;if to check if row is in 0-1 bound
+ 00000163  83 F9 02			CMP ecx, 2
+ 00000166  74 02			JZ outOfBoundsC2 ; if ecx >= 2
+ 00000168  EB 11			JMP endBoundCheckC2
+ 0000016A				outOfBoundsC2:
+ 0000016A  83 F9 03			CMP ecx, 3 ; if ecx >= 3
+ 0000016D  74 07			JZ setToOneC2
+ 0000016F  B9 00000000			MOV ecx, 0
+ 00000174  EB 05			JMP endBoundCheckC2
+
+ 00000176				setToOneC2:
+ 00000176  B9 00000001			MOV ecx, 1
+
+ 0000017B				endBoundCheckC2:
+
+ 0000017B  83 FA 02			CMP edx, 2
+ 0000017E  74 02			JZ outOfBoundsD2 ; if ecx >= 2
+ 00000180  EB 11			JMP endBoundCheckD2
+ 00000182				outOfBoundsD2:
+ 00000182  83 FA 03			CMP edx, 3 ; if ecx >= 3
+ 00000185  74 07			JZ setToOneD2
+ 00000187  BA 00000000			MOV edx, 0
+ 0000018C  EB 05			JMP endBoundCheckD2
+
+ 0000018E				setToOneD2:
+ 0000018E  BA 00000001			MOV edx, 1
+
+ 00000193				endBoundCheckD2:
+					;----------------------------
+					;BLOCK TO CHECK ROW COL BOUND END
+					;----------------------------
+
+					;calc to get row,col of K array
+ 00000193  8B C1			MOV eax, ecx ; eax = row
+ 00000195  6B C0 04			IMUL eax, 4 ; eax = row*numCol
+ 00000198  03 C2			ADD eax, edx; eax = row*numCol + col
+
+ 0000019A  6B C0 04			IMUL eax, 4 ; as dword is size 4
+
+					;move a value from K array to stack
+ 0000019D  8D 1D 000000E6 R		LEA ebx, kernalArray ;load address of imageArray
+ 000001A3  03 D8			ADD ebx, eax ; as DWORD, size 4.... set size to what i want
+ 000001A5  FF 33			PUSH [ebx] ; add the K value from array to stack
+
+ 000001A7  8B D7			MOV edx, edi ;reset values
+ 000001A9  8B CE			MOV ecx, esi
+
+					
+ 000001AB  4A				DEC edx ;now deincrement col
+ 000001AC  41				INC ecx ;now increment row
+
+
+					;----------------------------
+					;BLOCK TO CHECK ROW COL BOUND START for out of 4 range
+					;----------------------------
+
+					;if to check if row is in 0-3 bound
+ 000001AD  83 F9 04			CMP ecx, 4
+ 000001B0  74 02			JZ outOfBounds4 ; if ecx >= 4
+ 000001B2  EB 06			JMP endBoundCheck4
+ 000001B4				outOfBounds4:
+ 000001B4  B9 00000000			MOV ecx, 0
+ 000001B9  42				INC edx
+
+ 000001BA				endBoundCheck4:
+					;----------------------------
+					;BLOCK TO CHECK ROW COL BOUND END
+					;----------------------------
+
+
+ 000001BA  E9 FFFFFF1F			JMP stackCondition ; go back to start
+ 000001BF				stackEnd:
+					
+					;-----------------------------;
+					;Block for adding K and I to stack - end
+					;------------------------------;
+
+
+					;-----------------------------;
+					;Block for outputting stack START
+					;------------------------------;
+
+ 000001BF				stackOutputStart:
+
+					
+
+
+
+
+ 000001BF  BA 00000000		MOV edx, 0
+ 000001C4  58				POP eax
+ 000001C5  59				POP ecx
+ 000001C6  0F AF C1			imul eax, ecx
+ 000001C9  03 D0			ADD edx, eax
+
+ 000001CB  58				POP eax
+ 000001CC  59				POP ecx
+ 000001CD  0F AF C1			imul eax, ecx
+ 000001D0  03 D0			ADD edx, eax
+
+ 000001D2  58				POP eax
+ 000001D3  59				POP ecx
+ 000001D4  0F AF C1			imul eax, ecx
+ 000001D7  03 D0			ADD edx, eax
+
+ 000001D9  58				POP eax
+ 000001DA  59				POP ecx
+ 000001DB  0F AF C1			imul eax, ecx
+ 000001DE  03 D0			ADD edx, eax
+
+					INVOKE OutputStr, ADDR strTest
+					INVOKE OutputInt, edx
+
+
+
+
+					;-----------------------------;
+					;Block for outputting stack END
+					;------------------------------;
+
+					;Msg asking to exit loop
+					INVOKE OutputStr, ADDR strInputExit
+					INVOKE InputInt
+ 000001FF  8B C8			MOV ecx, eax
+
+ 00000201  E9 FFFFFDFF			JMP whileLoopCondition ;jump to start of loop
+
+ 00000206				whileLoopEnd:
+
+
+
+
+
+
+					INVOKE ExitProcess, 0
+ 0000020D			Public _start
+				END
+Microsoft (R) Macro Assembler Version 6.11		    08/17/23 17:52:59
+src\P04.asm						     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+FLAT . . . . . . . . . . . . . .	GROUP
+STACK  . . . . . . . . . . . . .	32 Bit	 00001000 DWord	  Stack	  'STACK'	 
+_DATA  . . . . . . . . . . . . .	32 Bit	 00000122 DWord	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 0000020D DWord	  Public  'CODE'	
+
+
+Procedures,  parameters and locals:
+
+                N a m e                 Type     Value    Attr
+
+$$$$$$00001  . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 0000020D Private
+  whileLoopCondition . . . . . .	L Near	 00000005 _TEXT	
+  whileLoopBody  . . . . . . . .	L Near	 0000000E _TEXT	
+  whileBodyI . . . . . . . . . .	L Near	 00000039 _TEXT	
+  whileEndI  . . . . . . . . . .	L Near	 00000071 _TEXT	
+  whileBodyK . . . . . . . . . .	L Near	 0000007E _TEXT	
+  whileEndK  . . . . . . . . . .	L Near	 000000B9 _TEXT	
+  stackCondition . . . . . . . .	L Near	 000000DE _TEXT	
+  stackStart . . . . . . . . . .	L Near	 000000EA _TEXT	
+  outOfBoundsC1  . . . . . . . .	L Near	 00000109 _TEXT	
+  setToOneC1 . . . . . . . . . .	L Near	 00000115 _TEXT	
+  endBoundCheckC1  . . . . . . .	L Near	 0000011A _TEXT	
+  outOfBoundsD1  . . . . . . . .	L Near	 00000121 _TEXT	
+  setToOneD1 . . . . . . . . . .	L Near	 0000012D _TEXT	
+  endBoundCheckD1  . . . . . . .	L Near	 00000132 _TEXT	
+  outOfBoundsC2  . . . . . . . .	L Near	 0000016A _TEXT	
+  setToOneC2 . . . . . . . . . .	L Near	 00000176 _TEXT	
+  endBoundCheckC2  . . . . . . .	L Near	 0000017B _TEXT	
+  outOfBoundsD2  . . . . . . . .	L Near	 00000182 _TEXT	
+  setToOneD2 . . . . . . . . . .	L Near	 0000018E _TEXT	
+  endBoundCheckD2  . . . . . . .	L Near	 00000193 _TEXT	
+  outOfBounds4 . . . . . . . . .	L Near	 000001B4 _TEXT	
+  endBoundCheck4 . . . . . . . .	L Near	 000001BA _TEXT	
+  stackEnd . . . . . . . . . . .	L Near	 000001BF _TEXT	
+  stackOutputStart . . . . . . .	L Near	 000001BF _TEXT	
+  whileLoopEnd . . . . . . . . .	L Near	 00000206 _TEXT	
+ExitProcess  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+InputInt . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+InputStr . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+OutputFloat8 . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+OutputFloat  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+OutputInt  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+OutputStr  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+@CodeSize  . . . . . . . . . . .	Number	 00000000h   
+@DataSize  . . . . . . . . . . .	Number	 00000000h   
+@Interface . . . . . . . . . . .	Number	 00000000h   
+@Model . . . . . . . . . . . . .	Number	 00000007h   
+@code  . . . . . . . . . . . . .	Text   	 _TEXT
+@data  . . . . . . . . . . . . .	Text   	 FLAT
+@fardata?  . . . . . . . . . . .	Text   	 FLAT
+@fardata . . . . . . . . . . . .	Text   	 FLAT
+@stack . . . . . . . . . . . . .	Text   	 FLAT
+IO_INC . . . . . . . . . . . . .	Text   	 1
+_start . . . . . . . . . . . . .	L Near	 00000000 _TEXT	Public
+cutoff . . . . . . . . . . . . .	DWord	 0000011A _DATA	
+endBoundCheck4 . . . . . . . . .	L Near	 000001BA _TEXT	
+endBoundCheckC1  . . . . . . . .	L Near	 0000011A _TEXT	
+endBoundCheckC2  . . . . . . . .	L Near	 0000017B _TEXT	
+endBoundCheckD1  . . . . . . . .	L Near	 00000132 _TEXT	
+endBoundCheckD2  . . . . . . . .	L Near	 00000193 _TEXT	
+imageArray . . . . . . . . . . .	DWord	 000000A6 _DATA	
+kernalArray  . . . . . . . . . .	DWord	 000000E6 _DATA	
+outOfBounds4 . . . . . . . . . .	L Near	 000001B4 _TEXT	
+outOfBoundsC1  . . . . . . . . .	L Near	 00000109 _TEXT	
+outOfBoundsC2  . . . . . . . . .	L Near	 0000016A _TEXT	
+outOfBoundsD1  . . . . . . . . .	L Near	 00000121 _TEXT	
+outOfBoundsD2  . . . . . . . . .	L Near	 00000182 _TEXT	
+outputArray  . . . . . . . . . .	DWord	 000000F6 _DATA	
+setToOneC1 . . . . . . . . . . .	L Near	 00000115 _TEXT	
+setToOneC2 . . . . . . . . . . .	L Near	 00000176 _TEXT	
+setToOneD1 . . . . . . . . . . .	L Near	 0000012D _TEXT	
+setToOneD2 . . . . . . . . . . .	L Near	 0000018E _TEXT	
+stackCondition . . . . . . . . .	L Near	 000000DE _TEXT	
+stackEnd . . . . . . . . . . . .	L Near	 000001BF _TEXT	
+stackOutputStart . . . . . . . .	L Near	 000001BF _TEXT	
+stackStart . . . . . . . . . . .	L Near	 000000EA _TEXT	
+strInputBracket  . . . . . . . .	Byte	 00000095 _DATA	
+strInputCutOff . . . . . . . . .	Byte	 00000079 _DATA	
+strInputExit . . . . . . . . . .	Byte	 00000000 _DATA	
+strInputI  . . . . . . . . . . .	Byte	 0000002B _DATA	
+strInputK  . . . . . . . . . . .	Byte	 00000052 _DATA	
+strInputSpace  . . . . . . . . .	Byte	 0000009A _DATA	
+strTest  . . . . . . . . . . . .	Byte	 0000009C _DATA	
+temp . . . . . . . . . . . . . .	DWord	 0000011E _DATA	
+whileBodyI . . . . . . . . . . .	L Near	 00000039 _TEXT	
+whileBodyK . . . . . . . . . . .	L Near	 0000007E _TEXT	
+whileEndI  . . . . . . . . . . .	L Near	 00000071 _TEXT	
+whileEndK  . . . . . . . . . . .	L Near	 000000B9 _TEXT	
+whileLoopBody  . . . . . . . . .	L Near	 0000000E _TEXT	
+whileLoopCondition . . . . . . .	L Near	 00000005 _TEXT	
+whileLoopEnd . . . . . . . . . .	L Near	 00000206 _TEXT	
+
+	   0 Warnings
+	   0 Errors

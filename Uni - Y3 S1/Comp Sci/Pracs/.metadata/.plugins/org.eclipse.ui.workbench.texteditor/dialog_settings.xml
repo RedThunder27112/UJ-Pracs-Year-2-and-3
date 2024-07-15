@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
+		<item key="selection" value=""/>
+		<item key="wrap" value="true"/>
+		<item key="casesensitive" value="false"/>
+		<item key="wholeword" value="false"/>
+		<item key="incremental" value="false"/>
+		<item key="isRegEx" value="false"/>
+		<list key="findhistory">
+			<item value="btnRead"/>
+			<item value="btnSave"/>
+			<item value="addNode"/>
+			<item value="idCounterSet"/>
+			<item value="setCounter"/>
+			<item value="System.out.print"/>
+			<item value="System"/>
+			<item value="System.out"/>
+			<item value="dele"/>
+			<item value="setVisited"/>
+			<item value="xxx"/>
+			<item value="displayNodes"/>
+			<item value="btnUpdate"/>
+			<item value="asd"/>
+			<item value="sssss"/>
+		</list>
+		<list key="replacehistory">
+			<item value="c1"/>
+			<item value="public"/>
+			<item value="public "/>
+			<item value="Vertex"/>
+			<item value="Vertex&lt;Choice&gt;"/>
+			<item value=""/>
+			<item value="."/>
+			<item value=" "/>
+			<item value="positionToTreeNode"/>
+			<item value="getparent"/>
+			<item value=".getParents"/>
+			<item value=".getChildren"/>
+			<item value="txtTotal.setText(&quot;Money: R&quot;+total+&quot;\nTime: &quot;+totalTime);"/>
+			<item value="&lt;Choice&gt;"/>
+		</list>
+	</section>
+	<section name="org.eclipse.ui.texteditor.FindReplaceDialog_dialogBounds">
+		<item key="DIALOG_X_ORIGIN" value="9"/>
+		<item key="DIALOG_Y_ORIGIN" value="104"/>
+		<item key="DIALOG_WIDTH" value="617"/>
+		<item key="DIALOG_HEIGHT" value="606"/>
+		<item key="DIALOG_FONT_NAME" value="1|Segoe UI|9.0|0|WINDOWS|1|-15|0|0|0|400|0|0|0|1|0|0|0|0|Segoe UI"/>
+	</section>
+</section>

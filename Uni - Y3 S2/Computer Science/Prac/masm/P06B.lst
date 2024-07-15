@@ -1,0 +1,286 @@
+Microsoft (R) Macro Assembler Version 6.11		    09/14/23 15:06:33
+src\P06B.asm						     Page 1 - 1
+
+
+				;	Author:     221003350 Ariel Sischy
+				;	Computer Science 3B - P06B
+				.386
+				.MODEL FLAT ; Flat memory model
+				.STACK 4096 ; 4096 bytes
+
+				INCLUDE io.inc ; Directive to use the IO Library
+			      C ;
+			      C ; Simple I/O Routines - Version 2
+			      C ;
+			      C 
+			      C IFNDEF IO_INC
+ = 1			      C IO_INC equ <1>
+			      C 
+			      C OutputStr PROTO NEAR32 STDCALL :DWORD
+			      C OutputInt PROTO NEAR32 STDCALL :DWORD
+			      C OutputFloat PROTO NEAR32 STDCALL :DWORD
+			      C OutputFloat8 PROTO NEAR32 STDCALL :QWORD
+			      C InputInt PROTO NEAR32 STDCALL
+			      C InputStr PROTO NEAR32 STDCALL :DWORD, :DWORD
+			      C 
+			      C ELSE
+			      C ENDIF
+			      C 
+
+				; Exit function
+				ExitProcess PROTO NEAR32 stdcall, dwExitCode:DWORD
+
+				; The data section stores all global variables
+ 00000000			.DATA
+
+ 00000000 46 69 6E 61 6C	msgOutput BYTE "Final Answer = ",0
+	   20 41 6E 73 77
+	   65 72 20 3D 20
+	   00
+ 00000010 50 6C 65 61 73	msgInput BYTE "Please Enter an Integer: ",0
+	   65 20 45 6E 74
+	   65 72 20 61 6E
+	   20 49 6E 74 65
+	   67 65 72 3A 20
+	   00
+ 0000002A 49 6E 74 65 67	msgArray BYTE "Integer in array at stored location (0 = null): ",0
+	   65 72 20 69 6E
+	   20 61 72 72 61
+	   79 20 61 74 20
+	   73 74 6F 72 65
+	   64 20 6C 6F 63
+	   61 74 69 6F 6E
+	   20 28 30 20 3D
+	   20 6E 75 6C 6C
+	   29 3A 20 00
+ 0000005B 45 6E 74 65 72	msgExit BYTE "Enter 0 to exit, and 1 to continue: ",0
+	   20 30 20 74 6F
+	   20 65 78 69 74
+	   2C 20 61 6E 64
+	   20 31 20 74 6F
+	   20 63 6F 6E 74
+	   69 6E 75 65 3A
+	   20 00
+ 00000080 20 0A 00		msgSpace BYTE " ",10,0
+
+
+ 00000000			.CODE
+
+ 00000000			_falkor PROC NEAR32 ;f(n)
+
+				;push variables on stack to pop after function
+ 00000000  55			PUSH ebp
+ 00000001  8B EC		MOV ebp, esp
+ 00000003  52			PUSH edx
+ 00000004  51			PUSH ecx
+ 00000005  53			PUSH ebx
+ 00000006  9C			PUSHFD
+
+ 00000007  8B 4D 08		MOV ecx, [ebp+8]
+
+ 0000000A  83 F9 03		CMP ecx, 3
+ 0000000D  7F 1A		JG GreaterStart ;if n > 3
+
+ 0000000F  BB 00000000		MOV ebx, 0
+ 00000014  3B D9		CMP ebx, ecx
+ 00000016  7D 02		JGE SmallerStart ;if n <= 0
+ 00000018  EB 07		JMP MiddleStart ; else 0 < n <= 3
+
+
+ 0000001A			SmallerStart:;return 1
+ 0000001A  B8 00000001		MOV eax, 1
+
+ 0000001F  EB 26		JMP RecursionEnd;jump to en
+
+ 00000021			MiddleStart:;return n << 2
+
+ 00000021  8B 45 08		MOV eax, [ebp+8]
+ 00000024  C1 E0 02		SHL eax, 2
+
+
+ 00000027  EB 1E		JMP RecursionEnd ;jump to end
+ 00000029			GreaterStart:
+ 00000029  8B 5D 08		MOV ebx, [ebp+8];store n in ecx and ebx
+ 0000002C  8B 4D 08		MOV ecx, [ebp+8]
+
+ 0000002F  83 EB 02		SUB ebx, 2 ; n-2
+ 00000032  53			PUSH ebx
+ 00000033  E8 FFFFFFC8		CALL _falkor ; falkor(n-2)
+ 00000038  8B D0		MOV edx, eax ; store eax in edx
+
+ 0000003A  C1 E9 02		SHR ecx, 2 ; n >> 2
+ 0000003D  51			PUSH ecx
+ 0000003E  E8 FFFFFFBD		CALL _falkor ; falkor(n >> 2)
+
+ 00000043  03 C2		ADD eax, edx
+ 00000045  EB 00		JMP RecursionEnd ;jump to end
+
+ 00000047			RecursionEnd:
+
+				;pop variables from stack to reset varaibe values
+ 00000047  9D			POPFD
+ 00000048  5B			POP ebx
+ 00000049  59			POP ecx
+ 0000004A  5A			POP edx
+ 0000004B  8B E5		MOV esp, ebp
+ 0000004D  5D			POP ebp
+ 0000004E  C2 0004		RET 4
+
+
+ 00000051			_falkor ENDP
+
+ 00000051			_start:
+ 00000051  55				PUSH ebp 
+ 00000052  8B EC			MOV ebp, esp
+ 00000054  83 EC 04			SUB esp, 4
+ 00000057  81 EC 00000190		SUB esp, 400
+
+ 0000005D				BeginLoop:
+ 0000005D  8D 05 00000080 R		LEA eax, msgSpace ;space message
+ 00000063  50				PUSH eax
+ 00000064  E8 00000000 E		CALL OutputStr
+					
+ 00000069  8D 05 00000010 R		LEA eax, msgInput ;get user input of n
+ 0000006F  50				PUSH eax
+ 00000070  E8 00000000 E		CALL OutputStr
+					 
+ 00000075  E8 00000000 E		CALL InputInt
+
+					;add eax/n variable as paramator to falkor
+
+
+ 0000007A  8B D8			MOV ebx, eax ; store eax in ecx to not change n value
+ 0000007C  6B C0 04			IMUL eax, 4 ; word is 4*n
+ 0000007F  83 C0 04			ADD eax, 4
+				;;;;;;
+ 00000082  8B D5			MOV edx, ebp ; here, you want to have a dynamic [ebp-x]
+ 00000084  2B D0			SUB edx, eax ; edx = ebp - eax
+
+ 00000086  8D 05 00000080 R		LEA eax, msgSpace ;space message
+ 0000008C  50				PUSH eax
+ 0000008D  E8 00000000 E		CALL OutputStr
+
+ 00000092  8D 05 0000002A R		LEA eax, msgArray ;array message
+ 00000098  50				PUSH eax
+ 00000099  E8 00000000 E		CALL OutputStr
+
+ 0000009E  FF 32			PUSH [edx] ; outputing final answer
+ 000000A0  E8 00000000 E		CALL OutputInt
+
+ 000000A5  8B 0A			MOV ecx, [edx] ;now check if there is a value in array
+ 000000A7  83 F9 00			CMP ecx, 0
+ 000000AA  74 02			JE NotInArray; not in array, so call function
+ 000000AC  EB 08			JMP InArray ; in array, so skip function
+
+
+
+ 000000AE				NotInArray:
+ 000000AE  53				PUSH ebx
+ 000000AF  E8 FFFFFF4C			CALL _falkor
+
+ 000000B4  89 02			MOV [edx], eax ; add value calculated to array
+ 000000B6				InArray:
+
+ 000000B6  8D 05 00000080 R		LEA eax, msgSpace ;space message
+ 000000BC  50				PUSH eax
+ 000000BD  E8 00000000 E		CALL OutputStr
+
+ 000000C2  8D 05 00000000 R		LEA eax, msgOutput ;space output
+ 000000C8  50				PUSH eax
+ 000000C9  E8 00000000 E		CALL OutputStr
+					
+ 000000CE  FF 32			PUSH [edx] ; outputing final answer
+ 000000D0  E8 00000000 E		CALL OutputInt
+
+ 000000D5  8D 05 00000080 R		LEA eax, msgSpace ;space message
+ 000000DB  50				PUSH eax
+ 000000DC  E8 00000000 E		CALL OutputStr
+
+
+
+ 000000E1  8D 05 00000080 R		LEA eax, msgSpace ;space message
+ 000000E7  50				PUSH eax
+ 000000E8  E8 00000000 E		CALL OutputStr
+
+ 000000ED  8D 05 0000005B R		LEA eax, msgExit ;ask user if they want to exit
+ 000000F3  50				PUSH eax
+ 000000F4  E8 00000000 E		CALL OutputStr
+					 
+ 000000F9  E8 00000000 E		CALL InputInt
+ 000000FE  8B C8			MOV ecx, eax
+ 00000100  83 F9 00			CMP ecx, 0
+ 00000103  0F 85 FFFFFF54		JNZ BeginLoop ; if ecx != 0, loop back
+
+					
+ 00000109  8B E5			MOV esp, ebp
+ 0000010B  5D				POP ebp
+
+ 0000010C  6A 00			PUSH 0	; ExitProcess, 0
+ 0000010E  E8 00000000 E		CALL ExitProcess
+
+ 00000113			Public _start
+				END
+Microsoft (R) Macro Assembler Version 6.11		    09/14/23 15:06:33
+src\P06B.asm						     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+FLAT . . . . . . . . . . . . . .	GROUP
+STACK  . . . . . . . . . . . . .	32 Bit	 00001000 DWord	  Stack	  'STACK'	 
+_DATA  . . . . . . . . . . . . .	32 Bit	 00000083 DWord	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 00000113 DWord	  Public  'CODE'	
+
+
+Procedures,  parameters and locals:
+
+                N a m e                 Type     Value    Attr
+
+$$$$$$00002  . . . . . . . . . .	P Near	 00000051 _TEXT	Length= 000000C2 Private
+  BeginLoop  . . . . . . . . . .	L Near	 0000005D _TEXT	
+  NotInArray . . . . . . . . . .	L Near	 000000AE _TEXT	
+  InArray  . . . . . . . . . . .	L Near	 000000B6 _TEXT	
+ExitProcess  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+InputInt . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+InputStr . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+OutputFloat8 . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+OutputFloat  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+OutputInt  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+OutputStr  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+_falkor  . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 00000051 Public
+  SmallerStart . . . . . . . . .	L Near	 0000001A _TEXT	
+  MiddleStart  . . . . . . . . .	L Near	 00000021 _TEXT	
+  GreaterStart . . . . . . . . .	L Near	 00000029 _TEXT	
+  RecursionEnd . . . . . . . . .	L Near	 00000047 _TEXT	
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+@CodeSize  . . . . . . . . . . .	Number	 00000000h   
+@DataSize  . . . . . . . . . . .	Number	 00000000h   
+@Interface . . . . . . . . . . .	Number	 00000000h   
+@Model . . . . . . . . . . . . .	Number	 00000007h   
+@code  . . . . . . . . . . . . .	Text   	 _TEXT
+@data  . . . . . . . . . . . . .	Text   	 FLAT
+@fardata?  . . . . . . . . . . .	Text   	 FLAT
+@fardata . . . . . . . . . . . .	Text   	 FLAT
+@stack . . . . . . . . . . . . .	Text   	 FLAT
+BeginLoop  . . . . . . . . . . .	L Near	 0000005D _TEXT	
+IO_INC . . . . . . . . . . . . .	Text   	 1
+InArray  . . . . . . . . . . . .	L Near	 000000B6 _TEXT	
+NotInArray . . . . . . . . . . .	L Near	 000000AE _TEXT	
+_start . . . . . . . . . . . . .	L Near	 00000051 _TEXT	Public
+msgArray . . . . . . . . . . . .	Byte	 0000002A _DATA	
+msgExit  . . . . . . . . . . . .	Byte	 0000005B _DATA	
+msgInput . . . . . . . . . . . .	Byte	 00000010 _DATA	
+msgOutput  . . . . . . . . . . .	Byte	 00000000 _DATA	
+msgSpace . . . . . . . . . . . .	Byte	 00000080 _DATA	
+
+	   0 Warnings
+	   0 Errors

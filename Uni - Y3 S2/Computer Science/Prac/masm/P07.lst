@@ -1,0 +1,571 @@
+Microsoft (R) Macro Assembler Version 6.11		    09/21/23 18:11:25
+src\P07.asm						     Page 1 - 1
+
+
+				;	Author:     221003350 Ariel Sischy
+				;	Computer Science 3B - P07
+				.386
+				.MODEL FLAT ; Flat memory model
+				.STACK 4096 ; 4096 bytes
+
+				INCLUDE io.inc ; Directive to use the IO Library
+			      C ;
+			      C ; Simple I/O Routines - Version 2
+			      C ;
+			      C 
+			      C IFNDEF IO_INC
+ = 1			      C IO_INC equ <1>
+			      C 
+			      C OutputStr PROTO NEAR32 STDCALL :DWORD
+			      C OutputInt PROTO NEAR32 STDCALL :DWORD
+			      C OutputFloat PROTO NEAR32 STDCALL :DWORD
+			      C OutputFloat8 PROTO NEAR32 STDCALL :QWORD
+			      C InputInt PROTO NEAR32 STDCALL
+			      C InputStr PROTO NEAR32 STDCALL :DWORD, :DWORD
+			      C 
+			      C ELSE
+			      C ENDIF
+			      C 
+
+				; Exit function
+				ExitProcess PROTO NEAR32 stdcall, dwExitCode:DWORD
+
+				; The data section stores all global variables
+ 00000000			.DATA
+
+				;string promts
+ 00000000 45 6E 74 65 72	msgExit BYTE "Enter 0 to exit, or 1 to re-do program: ", 0
+	   20 30 20 74 6F
+	   20 65 78 69 74
+	   2C 20 6F 72 20
+	   31 20 74 6F 20
+	   72 65 2D 64 6F
+	   20 70 72 6F 67
+	   72 61 6D 3A 20
+	   00
+ 00000029 20 0A 00		msgLine BYTE " ",10,0
+ 0000002C 20 2D 20 00		msgSpace BYTE " - ",0
+ 00000030 45 6E 74 65 72	msgInputStr1 BYTE "Enter string 1: ",0
+	   20 73 74 72 69
+	   6E 67 20 31 3A
+	   20 00
+ 00000041 45 6E 74 65 72	msgInputStr2 BYTE "Enter string 2: ",0
+	   20 73 74 72 69
+	   6E 67 20 32 3A
+	   20 00
+ 00000052 44 69 73 74 48	msgLength BYTE "DistHamming Str1 and Str2 lengths differ: No Answer",0
+	   61 6D 6D 69 6E
+	   67 20 53 74 72
+	   31 20 61 6E 64
+	   20 53 74 72 32
+	   20 6C 65 6E 67
+	   74 68 73 20 64
+	   69 66 66 65 72
+	   3A 20 4E 6F 20
+	   41 6E 73 77 65
+	   72 00
+
+ 00000086 64 69 73 74 48	msgDistHamming BYTE "distHamming final answer: ",0
+	   61 6D 6D 69 6E
+	   67 20 66 69 6E
+	   61 6C 20 61 6E
+	   73 77 65 72 3A
+	   20 00
+ 000000A1 6C 65 76 65 6E	msgLeven BYTE "levenEnd final answer: ",0
+	   45 6E 64 20 66
+	   69 6E 61 6C 20
+	   61 6E 73 77 65
+	   72 3A 20 00
+
+				;2 string values
+ 000000B9  00000032 [		str1 BYTE 50 DUP (?) 
+	    00
+	   ]
+ 000000EB  00000032 [		str2 BYTE 50 DUP (?)
+	    00
+	   ]
+
+ 0000011D 00000000		tests DWORD ?
+
+
+ 00000000			.CODE
+
+ 00000000			_distHamming PROC NEAR32
+
+				;allocating stack 
+ 00000000  55			PUSH ebp
+ 00000001  8B EC		MOV ebp, esp
+				;pushing variables
+ 00000003  53			PUSH ebx
+ 00000004  51			PUSH ecx
+ 00000005  52			PUSH edx
+ 00000006  9C			PUSHFD
+
+
+
+
+
+ 00000007  8B 4D 08		MOV ecx, [ebp+8] ;length of str1
+ 0000000A  3B 4D 0C		CMP ecx, [ebp+12] ;see if length is same
+ 0000000D  74 02		JE sameLength
+ 0000000F  EB 30		JMP diffLengthS
+ 00000011			sameLength:
+
+
+
+ 00000011  8D 0D 000000B9 R	LEA ecx, str1;load string address into registers
+ 00000017  8D 15 000000EB R	LEA edx, str2
+
+				;MOV ecx, 1 ;used for length of loop
+
+
+ 0000001D			hammingLoopS:
+
+				;compare each string character eachother
+ 0000001D  8A 19		MOV BL, [ecx]
+ 0000001F  8A 02		MOV AL, [edx]
+
+
+ 00000021  38 D8		CMP AL, BL
+
+ 00000023  74 07		JE noDifference ; if no difference, skip
+
+
+				;INC eax ; else increment eax
+ 00000025  8B 45 14		MOV eax, [ebp+20]
+ 00000028  40			INC eax
+ 00000029  89 45 14		MOV [ebp+20], eax
+
+
+ 0000002C			noDifference:
+
+ 0000002C  8B 45 10		MOV eax, [ebp+16]
+ 0000002F  3B 45 0C		CMP eax, [ebp+12] ; check if every character has been gone through
+ 00000032  74 0B		JE hammingLoopE ;exit loop
+					
+ 00000034  41			INC ecx
+ 00000035  42			INC edx ;increase edx and ebx
+
+ 00000036  8B 45 10		MOV eax, [ebp+16]
+ 00000039  40			INC eax
+ 0000003A  89 45 10		MOV [ebp+16], eax
+
+ 0000003D  EB DE		JMP hammingLoopS
+ 0000003F			hammingLoopE:
+
+
+ 0000003F  EB 08		JMP diffLengthE ;skip diff length part
+ 00000041			diffLengthS:
+
+ 00000041  B8 FFFFFFFF		MOV eax, -1
+ 00000046  89 45 14		MOV [ebp+20], eax
+
+ 00000049			diffLengthE:
+				;popping stack and variables
+ 00000049  8B 45 14		MOV eax, [ebp+20]
+ 0000004C  9D			POPFD
+ 0000004D  5A			POP edx
+ 0000004E  59			POP ecx
+ 0000004F  5B			POP ebx
+				;destroying stack
+ 00000050  8B E5		MOV esp, ebp
+ 00000052  5D			POP ebp
+
+ 00000053  C2 0008		RET 8
+
+ 00000056			_distHamming ENDP
+
+ 00000056			_distLevenshtein PROC NEAR32
+
+				;allocating stack 
+ 00000056  55			PUSH ebp
+ 00000057  8B EC		MOV ebp, esp
+ 00000059  83 EC 0C		SUB esp, 12
+				;pushing variables
+ 0000005C  53			PUSH ebx
+ 0000005D  51			PUSH ecx
+ 0000005E  52			PUSH edx
+ 0000005F  9C			PUSHFD
+
+
+				; if i = 0
+ 00000060  8B 45 0C		MOV eax, [ebp+12]
+ 00000063  83 F8 00		CMP eax, 0
+
+ 00000066  8B 45 14		MOV eax, [ebp+20]
+ 00000069  0F 84 000000AF	JE levenEnd
+				; if j = 0
+ 0000006F  8B 45 14		MOV eax, [ebp+20]
+ 00000072  83 F8 00		CMP eax, 0
+
+ 00000075  8B 45 0C		MOV eax, [ebp+12]
+
+ 00000078  0F 84 000000A0	JE levenEnd
+
+				; if a i-1 = b j-1
+ 0000007E  8B 45 08		MOV eax, [ebp+8]
+ 00000081  8B 55 0C		MOV edx, [ebp+12]
+ 00000084  4A			DEC edx
+ 00000085  03 C2		ADD eax, edx
+
+ 00000087  8A 18		MOV BL, [eax];str2
+
+ 00000089  8B 45 10		MOV eax, [ebp+16];str1
+ 0000008C  8B 55 14		MOV edx, [ebp+20]
+ 0000008F  4A			DEC edx
+ 00000090  03 C2		ADD eax, edx
+ 00000092  8A 08		MOV CL, [eax]
+
+
+ 00000094  38 CB		CMP BL, CL
+ 00000096  74 02		JE  thirdLevenS
+ 00000098  EB 17		JMP thirdLevenE
+
+ 0000009A			thirdLevenS:
+
+ 0000009A  8B 55 14		MOV edx, [ebp+20]
+ 0000009D  4A			DEC edx
+
+ 0000009E  8B 45 0C		MOV eax, [ebp+12]
+ 000000A1  48			DEC eax
+
+ 000000A2  52			PUSH edx ; +20 str1 length
+ 000000A3  FF 75 10		PUSH [ebp+16]  ; +16 str1
+ 000000A6  50			PUSH eax  ;+12 str2
+ 000000A7  FF 75 08		PUSH [ebp+8] ;+8 str2 length
+
+ 000000AA  E8 FFFFFFA7		CALL _distLevenshtein
+
+
+ 000000AF  EB 6D		JMP levenEnd
+ 000000B1			thirdLevenE:
+
+				;a,i-1,b,i
+ 000000B1  8B 4D 0C		MOV ecx, [ebp+12]
+ 000000B4  49			DEC ecx
+
+ 000000B5  FF 75 14		PUSH [ebp+20] ; +20 str1 length
+ 000000B8  FF 75 10		PUSH [ebp+16]  ; +16 str1
+ 000000BB  51			PUSH ecx  ;+12 str2
+ 000000BC  FF 75 08		PUSH [ebp+8] ;+8 str2 length
+ 000000BF  E8 FFFFFF92		CALL _distLevenshtein
+ 000000C4  89 45 FC		MOV [ebp-4], eax
+
+				;a,i,b,i-1
+ 000000C7  8B 4D 14		MOV ecx, [ebp+20]
+ 000000CA  49			DEC ecx
+
+ 000000CB  51			PUSH ecx ; +20 str1 length
+ 000000CC  FF 75 10		PUSH [ebp+16]  ; +16 str1
+ 000000CF  FF 75 0C		PUSH [ebp+12]  ;+12 str2
+ 000000D2  FF 75 08		PUSH [ebp+8] ;+8 str2 length
+ 000000D5  E8 FFFFFF7C		CALL _distLevenshtein
+ 000000DA  89 45 F8		MOV [ebp-8], eax
+
+				;a,i-1,b,i-1
+ 000000DD  8B 4D 14		MOV ecx, [ebp+20]
+ 000000E0  49			DEC ecx
+
+ 000000E1  8B 55 0C		MOV edx, [ebp+12]
+ 000000E4  4A			DEC edx
+
+ 000000E5  51			PUSH ecx ; +20 str1 length
+ 000000E6  FF 75 10		PUSH [ebp+16]  ; +16 str1
+ 000000E9  52			PUSH edx  ;+12 str2
+ 000000EA  FF 75 08		PUSH [ebp+8] ;+8 str2 length
+ 000000ED  E8 FFFFFF64		CALL _distLevenshtein
+ 000000F2  89 45 F4		MOV [ebp-12], eax
+
+
+				;find which is min
+ 000000F5  8B 5D F4		MOV ebx, [ebp-12]
+ 000000F8  8B 4D F8		MOV ecx, [ebp-8]
+ 000000FB  8B 55 FC		MOV edx, [ebp-4]
+
+ 000000FE  3B D9		CMP ebx, ecx
+ 00000100  7F 02		JG ebxG
+ 00000102  EB 09		JMP ecxG
+
+ 00000104			ebxG:
+ 00000104  3B D1		CMP edx, ecx
+ 00000106  7F 0C		JG edxG
+ 00000108  8B C2		MOV eax, edx ;edx is smallest
+ 0000010A  40			INC eax
+ 0000010B  EB 11		JMP levenEnd 
+
+ 0000010D			ecxG:
+ 0000010D  3B D3		CMP edx, ebx
+ 0000010F  7F 08		JG edx2G
+ 00000111  8B C2		MOV eax, edx ;ecx is smallest
+ 00000113  40			INC eax
+
+ 00000114			edxG:
+ 00000114  8B C1		MOV eax, ecx ;ecx is smallest
+ 00000116  40			INC eax
+ 00000117  EB 05		JMP levenEnd 
+
+ 00000119			edx2G:
+ 00000119  8B C3		MOV eax, ebx ;ebx is smallest
+ 0000011B  40			INC eax
+ 0000011C  EB 00		JMP levenEnd 
+
+ 0000011E			levenEnd:
+
+				;popping stack and variables
+ 0000011E  9D			POPFD
+ 0000011F  5A			POP edx
+ 00000120  59			POP ecx
+ 00000121  5B			POP ebx
+				;destroying stack
+ 00000122  8B E5		MOV esp, ebp
+ 00000124  5D			POP ebp
+
+ 00000125  C2 0008		RET 8
+
+ 00000128			_distLevenshtein ENDP
+
+ 00000128			_getLength PROC NEAR32
+
+				;allocating stack 
+ 00000128  55			PUSH ebp
+ 00000129  8B EC		MOV ebp, esp
+				;pushing variables
+ 0000012B  53			PUSH ebx
+ 0000012C  51			PUSH ecx
+ 0000012D  52			PUSH edx
+ 0000012E  9C			PUSHFD
+
+ 0000012F  8B 4D 08		MOV ecx, [ebp+8]
+ 00000132  BA 00000000		MOV edx, 0
+ 00000137			startLength:
+ 00000137  8A 19		MOV BL, [ecx]
+
+				;go through array till you reach 0 (null)
+ 00000139  42			INC edx
+ 0000013A  41			INC ecx
+ 0000013B  80 FB 00		CMP BL, 0
+ 0000013E  75 F7		JNE startLength
+
+ 00000140  8B C2		MOV eax, edx
+ 00000142  48			DEC eax
+				;popping stack and variables
+ 00000143  9D			POPFD
+ 00000144  5A			POP edx
+ 00000145  59			POP ecx
+ 00000146  5B			POP ebx
+				;destroying stack
+ 00000147  8B E5		MOV esp, ebp
+ 00000149  5D			POP ebp
+
+ 0000014A  C2 0004		RET 4
+
+ 0000014D			_getLength ENDP
+
+
+ 0000014D			_start:
+ 0000014D
+					;start stack
+ 0000014D  55				PUSH ebp
+ 0000014E  8B EC			MOV ebp, esp
+					
+					;SUB esp, 100 ; size of st1 + st2 for distLevenshtein
+ 00000150				startLoop:
+
+					;get strings from user
+
+ 00000150  8D 05 00000030 R		LEA eax, msgInputStr1 ;str1 string message
+ 00000156  50				PUSH eax
+ 00000157  E8 00000000 E		CALL OutputStr
+
+ 0000015C  6A 32			PUSH 50 ; max size of string
+ 0000015E  8D 05 000000B9 R		LEA eax, str1
+ 00000164  50				PUSH eax ;address of string
+ 00000165  E8 00000000 E		CALL InputStr
+
+ 0000016A  8D 05 00000041 R		LEA eax, msgInputStr2 ;str2 string message
+ 00000170  50				PUSH eax
+ 00000171  E8 00000000 E		CALL OutputStr
+
+ 00000176  6A 32			PUSH 50 ; max size of string
+ 00000178  8D 05 000000EB R		LEA eax, str2
+ 0000017E  50				PUSH eax ;address of string
+ 0000017F  E8 00000000 E		CALL InputStr
+
+ 00000184  8D 05 00000029 R		LEA eax, msgLine ; next line
+ 0000018A  50				PUSH eax
+ 0000018B  E8 00000000 E		CALL OutputStr
+					
+					;get lengths
+ 00000190  8D 05 000000B9 R		LEA eax, str1 ;+12
+ 00000196  50				PUSH eax
+ 00000197  E8 FFFFFF8C			CALL _getLength
+ 0000019C  8B D8			MOV ebx, eax
+
+ 0000019E  8D 05 000000EB R		LEA eax, str2 ;+8
+ 000001A4  50				PUSH eax
+ 000001A5  E8 FFFFFF7E			CALL _getLength
+ 000001AA  8B C8			MOV ecx, eax
+
+
+ 000001AC  6A 00			PUSH 0 ; +20
+ 000001AE  6A 01			PUSH 1 ; +16
+ 000001B0  53				PUSH ebx ;+12
+ 000001B1  51				PUSH ecx ;+8
+
+					
+ 000001B2  E8 FFFFFE49			CALL _distHamming
+ 000001B7  8B D0			MOV edx, eax
+
+ 000001B9  83 FA FF			CMP edx, -1
+ 000001BC  74 20			JE nullMessageS
+
+ 000001BE  8D 05 00000086 R		LEA eax, msgDistHamming ;DistHamming string message
+ 000001C4  50				PUSH eax
+ 000001C5  E8 00000000 E		CALL OutputStr
+
+ 000001CA  52				PUSH edx ;DistHamming final answer
+ 000001CB  E8 00000000 E		CALL OutputInt
+
+ 000001D0  8D 05 00000029 R		LEA eax, msgLine ; next line
+ 000001D6  50				PUSH eax
+ 000001D7  E8 00000000 E		CALL OutputStr
+					
+ 000001DC  EB 18			JMP nullMessageE
+ 000001DE				nullMessageS:;message for when lengths of str1 and str2 differ
+
+ 000001DE  8D 05 00000052 R		LEA eax, msgLength ;DistHamming string message
+ 000001E4  50				PUSH eax
+ 000001E5  E8 00000000 E		CALL OutputStr
+
+ 000001EA  8D 05 00000029 R		LEA eax, msgLine ; next line
+ 000001F0  50				PUSH eax
+ 000001F1  E8 00000000 E		CALL OutputStr
+
+ 000001F6				nullMessageE:
+
+ 000001F6  8D 05 000000B9 R		LEA eax, str1
+ 000001FC  8D 15 000000EB R		LEA edx, str2
+
+ 00000202  53				PUSH ebx ; +20 str1 length
+ 00000203  50				PUSH eax ; +16 str1
+ 00000204  51				PUSH ecx ;+12 str2 length
+ 00000205  52				PUSH edx;+8 str2 
+ 00000206  E8 FFFFFE4B			CALL _distLevenshtein
+ 0000020B  8B D0			MOV edx, eax
+
+ 0000020D  8D 05 000000A1 R		LEA eax, msgLeven ;msgLeven string message
+ 00000213  50				PUSH eax
+ 00000214  E8 00000000 E		CALL OutputStr
+
+ 00000219  52				PUSH edx ;msgLeven final answer
+ 0000021A  E8 00000000 E		CALL OutputInt
+
+ 0000021F  8D 05 00000029 R		LEA eax, msgLine ; next line
+ 00000225  50				PUSH eax
+ 00000226  E8 00000000 E		CALL OutputStr
+					
+
+
+
+
+
+					;Ask user if they want to exit loop or not
+ 0000022B  8D 05 00000000 R		LEA eax, msgExit ;ask user if they want to exit
+ 00000231  50				PUSH eax
+ 00000232  E8 00000000 E		CALL OutputStr
+ 00000237  E8 00000000 E		CALL InputInt
+
+					;check if user entered 0 not (0 = continue/redo)
+ 0000023C  8B C8			MOV ecx, eax
+ 0000023E  83 F9 00			CMP ecx, 0
+ 00000241  0F 85 FFFFFF09		JNZ startLoop
+
+					;destroy stack
+ 00000247  8B E5			MOV esp, ebp
+ 00000249  5D				POP ebp
+
+					INVOKE ExitProcess, 0
+ 00000251			Public _start
+				END
+Microsoft (R) Macro Assembler Version 6.11		    09/21/23 18:11:25
+src\P07.asm						     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+FLAT . . . . . . . . . . . . . .	GROUP
+STACK  . . . . . . . . . . . . .	32 Bit	 00001000 DWord	  Stack	  'STACK'	 
+_DATA  . . . . . . . . . . . . .	32 Bit	 00000121 DWord	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 00000251 DWord	  Public  'CODE'	
+
+
+Procedures,  parameters and locals:
+
+                N a m e                 Type     Value    Attr
+
+$$$$$$00004  . . . . . . . . . .	P Near	 0000014D _TEXT	Length= 00000104 Private
+  startLoop  . . . . . . . . . .	L Near	 00000150 _TEXT	
+  nullMessageS . . . . . . . . .	L Near	 000001DE _TEXT	
+  nullMessageE . . . . . . . . .	L Near	 000001F6 _TEXT	
+ExitProcess  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+InputInt . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+InputStr . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+OutputFloat8 . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+OutputFloat  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+OutputInt  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+OutputStr  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+_distHamming . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 00000056 Public
+  sameLength . . . . . . . . . .	L Near	 00000011 _TEXT	
+  hammingLoopS . . . . . . . . .	L Near	 0000001D _TEXT	
+  noDifference . . . . . . . . .	L Near	 0000002C _TEXT	
+  hammingLoopE . . . . . . . . .	L Near	 0000003F _TEXT	
+  diffLengthS  . . . . . . . . .	L Near	 00000041 _TEXT	
+  diffLengthE  . . . . . . . . .	L Near	 00000049 _TEXT	
+_distLevenshtein . . . . . . . .	P Near	 00000056 _TEXT	Length= 000000F4 Public
+  thirdLevenS  . . . . . . . . .	L Near	 0000009A _TEXT	
+  thirdLevenE  . . . . . . . . .	L Near	 000000B1 _TEXT	
+  ebxG . . . . . . . . . . . . .	L Near	 00000104 _TEXT	
+  ecxG . . . . . . . . . . . . .	L Near	 0000010D _TEXT	
+  edxG . . . . . . . . . . . . .	L Near	 00000114 _TEXT	
+  edx2G  . . . . . . . . . . . .	L Near	 00000119 _TEXT	
+  levenEnd . . . . . . . . . . .	L Near	 0000011E _TEXT	
+_getLength . . . . . . . . . . .	P Near	 00000128 _TEXT	Length= 00000025 Public
+  startLength  . . . . . . . . .	L Near	 00000137 _TEXT	
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+@CodeSize  . . . . . . . . . . .	Number	 00000000h   
+@DataSize  . . . . . . . . . . .	Number	 00000000h   
+@Interface . . . . . . . . . . .	Number	 00000000h   
+@Model . . . . . . . . . . . . .	Number	 00000007h   
+@code  . . . . . . . . . . . . .	Text   	 _TEXT
+@data  . . . . . . . . . . . . .	Text   	 FLAT
+@fardata?  . . . . . . . . . . .	Text   	 FLAT
+@fardata . . . . . . . . . . . .	Text   	 FLAT
+@stack . . . . . . . . . . . . .	Text   	 FLAT
+IO_INC . . . . . . . . . . . . .	Text   	 1
+_start . . . . . . . . . . . . .	L Near	 0000014D _TEXT	Public
+msgDistHamming . . . . . . . . .	Byte	 00000086 _DATA	
+msgExit  . . . . . . . . . . . .	Byte	 00000000 _DATA	
+msgInputStr1 . . . . . . . . . .	Byte	 00000030 _DATA	
+msgInputStr2 . . . . . . . . . .	Byte	 00000041 _DATA	
+msgLength  . . . . . . . . . . .	Byte	 00000052 _DATA	
+msgLeven . . . . . . . . . . . .	Byte	 000000A1 _DATA	
+msgLine  . . . . . . . . . . . .	Byte	 00000029 _DATA	
+msgSpace . . . . . . . . . . . .	Byte	 0000002C _DATA	
+nullMessageE . . . . . . . . . .	L Near	 000001F6 _TEXT	
+nullMessageS . . . . . . . . . .	L Near	 000001DE _TEXT	
+startLoop  . . . . . . . . . . .	L Near	 00000150 _TEXT	
+str1 . . . . . . . . . . . . . .	Byte	 000000B9 _DATA	
+str2 . . . . . . . . . . . . . .	Byte	 000000EB _DATA	
+tests  . . . . . . . . . . . . .	DWord	 0000011D _DATA	
+
+	   0 Warnings
+	   0 Errors

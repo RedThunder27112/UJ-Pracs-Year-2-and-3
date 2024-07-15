@@ -1,0 +1,392 @@
+Microsoft (R) Macro Assembler Version 6.11		    09/28/23 15:42:49
+src\P08.asm						     Page 1 - 1
+
+
+				;	Author:     221003350 Ariel Sischy
+				;	Computer Science 3B - P08
+				.386
+				.MODEL FLAT ; Flat memory model
+				.STACK 4096 ; 4096 bytes
+
+				INCLUDE io.inc ; Directive to use the IO Library
+			      C ;
+			      C ; Simple I/O Routines - Version 2
+			      C ;
+			      C 
+			      C IFNDEF IO_INC
+ = 1			      C IO_INC equ <1>
+			      C 
+			      C OutputStr PROTO NEAR32 STDCALL :DWORD
+			      C OutputInt PROTO NEAR32 STDCALL :DWORD
+			      C OutputFloat PROTO NEAR32 STDCALL :DWORD
+			      C OutputFloat8 PROTO NEAR32 STDCALL :QWORD
+			      C InputInt PROTO NEAR32 STDCALL
+			      C InputStr PROTO NEAR32 STDCALL :DWORD, :DWORD
+			      C 
+			      C ELSE
+			      C ENDIF
+			      C 
+
+				; Exit function
+				ExitProcess PROTO NEAR32 stdcall, dwExitCode:DWORD
+
+				; The data section stores all global variables
+ 00000000			.DATA
+
+ 00000000 45 6E 74 65 72	msgExit BYTE "Enter 0 to exit, 1 to run again: ",0
+	   20 30 20 74 6F
+	   20 65 78 69 74
+	   2C 20 31 20 74
+	   6F 20 72 75 6E
+	   20 61 67 61 69
+	   6E 3A 20 00
+ 00000022 20 0A 00		msgLine BYTE " ",10,0
+ 00000025 45 6E 74 65 72	msgR BYTE "Enter value for R: ",0
+	   20 76 61 6C 75
+	   65 20 66 6F 72
+	   20 52 3A 20 00
+ 00000039 45 6E 74 65 72	msgG BYTE "Enter value for G: ",0
+	   20 76 61 6C 75
+	   65 20 66 6F 72
+	   20 47 3A 20 00
+ 0000004D 45 6E 74 65 72	msgB BYTE "Enter value for B: ",0
+	   20 76 61 6C 75
+	   65 20 66 6F 72
+	   20 42 3A 20 00
+
+ 00000061 43 50 55 20 6F	msgCPU BYTE "CPU output: ",0
+	   75 74 70 75 74
+	   3A 20 00
+ 0000006E 46 50 55 20 6F	msgFPU BYTE "FPU output: ",0
+	   75 74 70 75 74
+	   3A 20 00
+
+				;msgRC BYTE "Enter value for RC: ",0
+				;msgGC BYTE "Enter value for GC: ",0
+				;msgBC BYTE "Enter value for BC: ",0
+
+
+				; The code section may contain multiple tags such as _start, which is the entry
+				; point of this assembly program
+ 00000000			.CODE
+
+
+ 00000000			_grayScaleCPU PROC NEAR32
+				;create stack
+ 00000000  55			PUSH ebp
+ 00000001  8B EC		MOV ebp, esp
+ 00000003  83 EC 0C		SUB esp, 12 ; ints
+ 00000006  53			PUSH ebx
+ 00000007  51			PUSH ecx
+ 00000008  52			PUSH edx
+ 00000009  9C			PUSHFD
+
+				;code of method
+
+				;add calculation variables to stack
+
+
+
+				;load variables into CPU
+
+				;R multiplication
+ 0000000A  8B 45 08		MOV eax, [ebp+8] ;R
+ 0000000D  6B C0 03		IMUL eax, 3
+
+ 00000010  99			cdq ; prepare divisor
+ 00000011  BB 0000000A		MOV ebx, 10
+ 00000016  F7 FB		IDIV ebx ; divide eax by 10
+
+ 00000018  89 45 FC		MOV [ebp-4], eax
+
+				;G multiplication
+ 0000001B  8B 45 0C		MOV eax, [ebp+12] ;G
+ 0000001E  6B C0 06		IMUL eax, 6
+
+ 00000021  99			cdq ; prepare divisor
+ 00000022  BB 0000000A		MOV ebx, 10
+ 00000027  F7 FB		IDIV ebx ; divide eax by 10
+
+ 00000029  89 45 F8		MOV [ebp-8], eax
+
+ 0000002C  8B 45 10		MOV eax, [ebp+16] ; add B
+ 0000002F  99			cdq ; prepare divisor
+ 00000030  BB 0000000A		MOV ebx, 10
+ 00000035  F7 FB		IDIV ebx ; divide eax by 10
+ 00000037  89 45 10		MOV [ebp+16],eax
+
+ 0000003A  B8 00000000		MOV eax, 0
+ 0000003F  03 45 FC		ADD eax, [ebp-4] ;add R calc
+ 00000042  03 45 F8		ADD eax, [ebp-8] ; add G calc
+ 00000045  03 45 10		ADD eax, [ebp+16] ; add B
+
+
+
+
+				;pop stack
+ 00000048  9D			POPFD
+ 00000049  5A			POP edx
+ 0000004A  59			POP ecx
+ 0000004B  5B			POP ebx
+ 0000004C  8B E5		MOV esp, ebp
+ 0000004E  5D			POP ebp
+
+ 0000004F  C2 000C		RET 12
+
+ 00000052			_grayScaleCPU ENDP
+
+
+
+
+ 00000052			_grayScaleFPU PROC NEAR32
+				;create stack
+ 00000052  55			PUSH ebp
+ 00000053  8B EC		MOV ebp, esp
+ 00000055  83 EC 0C		SUB esp, 12 ; ints
+ 00000058  83 EC 10		SUB esp, 16 ; floating points
+ 0000005B  50			PUSH eax
+ 0000005C  53			PUSH ebx
+ 0000005D  51			PUSH ecx
+ 0000005E  52			PUSH edx
+ 0000005F  9C			PUSHFD
+
+				;code of method
+
+
+ 00000060  9B DB E3		FINIT ;initialise floating point unit
+
+				;get 0.144
+ 00000063  B8 00000072		MOV eax, 114
+ 00000068  89 45 FC		MOV [ebp-4], eax
+
+				;get 
+ 0000006B  B8 0000024B		MOV eax, 587
+ 00000070  89 45 F8		MOV [ebp-8], eax
+
+				;get 
+ 00000073  B8 0000012B		MOV eax, 299
+ 00000078  89 45 F4		MOV [ebp-12], eax
+
+				;load variables into FPU
+ 0000007B  DB 45 10		FILD DWORD PTR [ebp+16] ; B
+				;FLD temp11 ; 0.144
+ 0000007E  DB 45 FC		FILD REAL4 PTR [ebp-4] ; 144
+
+ 00000081  DE C9		FMUL ; B*114
+ 00000083  D9 55 F0		FST REAL4 PTR [ebp-16]
+
+
+
+ 00000086  DB 45 0C		FILD DWORD PTR [ebp+12] ; G
+ 00000089  DB 45 F8		FILD REAL4 PTR [ebp-8] ; 587
+
+ 0000008C  DE C9		FMUL ; G*(587)
+
+ 0000008E  D9 55 EC		FST REAL4 PTR [ebp-20]
+
+
+
+ 00000091  DB 45 08		FILD DWORD PTR [ebp+8] ; R
+ 00000094  DB 45 F4		FILD REAL4 PTR [ebp-12] ; 299
+
+ 00000097  DE C9		FMUL ; R*299
+ 00000099  D9 55 E8		FST REAL4 PTR [ebp-24]
+
+
+
+ 0000009C  D9 45 F0		FLD REAL4 PTR [ebp-16] ; B*144
+ 0000009F  D9 45 EC		FLD REAL4 PTR [ebp-20] ; G*587
+ 000000A2  D9 45 E8		FLD REAL4 PTR [ebp-24] ; R*299
+
+ 000000A5  DE C1		FADD
+ 000000A7  DE C1		FADD
+ 000000A9  D9 55 E4		FST REAL4 PTR [ebp-28]   ; final answer
+
+
+ 000000AC  D9 45 E4		FLD REAL4 PTR [ebp-28] ; R*0.299
+
+				;divide by 1000, so that final naswer is proper decimal
+ 000000AF  B8 000003E8		MOV eax, 1000
+ 000000B4  89 45 F0		MOV [ebp-16], eax
+ 000000B7  DB 45 F0		FILD DWORD PTR [ebp-16]
+
+ 000000BA  DE F9		FDIV 
+ 000000BC  D9 55 E4		FST REAL4 PTR [ebp-28]
+
+ 000000BF  8D 05 0000006E R	LEA eax, msgFPU ;FPU output
+ 000000C5  50			PUSH eax
+ 000000C6  E8 00000000 E	CALL OutputStr
+					
+ 000000CB  FF 75 E4		PUSH [ebp-28]
+ 000000CE  E8 00000000 E	CALL OutputFloat
+
+				;Next Line formating
+ 000000D3  8D 05 00000022 R	LEA eax, msgLine 
+ 000000D9  50			PUSH eax
+ 000000DA  E8 00000000 E	CALL OutputStr
+ 000000DF  8B D0		MOV edx, eax
+
+				;Next Line formating
+ 000000E1  8D 05 00000022 R	LEA eax, msgLine 
+ 000000E7  50			PUSH eax
+ 000000E8  E8 00000000 E	CALL OutputStr
+ 000000ED  8B D0		MOV edx, eax
+
+				;
+				;pop stack
+ 000000EF  9D			POPFD
+ 000000F0  5A			POP edx
+ 000000F1  59			POP ecx
+ 000000F2  5B			POP ebx
+ 000000F3  58			POP eax
+ 000000F4  8B E5		MOV esp, ebp
+ 000000F6  5D			POP ebp
+
+ 000000F7  C2 000C		RET 12
+
+ 000000FA			_grayScaleFPU ENDP
+
+ 000000FA			_start:
+ 000000FA
+ 000000FA  55				PUSH ebp
+ 000000FB  8B EC			MOV ebp, esp
+ 000000FD  83 EC 0C			SUB esp, 12
+ 00000100				startLoop:
+
+					;create stack
+
+
+
+					;ask user for R
+ 00000100  8D 05 00000025 R		LEA eax, msgR 
+ 00000106  50				PUSH eax
+ 00000107  E8 00000000 E		CALL OutputStr
+ 0000010C  E8 00000000 E		CALL InputInt
+ 00000111  89 45 FC			MOV [ebp-4], eax ;move R to ebp-4
+
+					;ask user for G
+ 00000114  8D 05 00000039 R		LEA eax, msgG 
+ 0000011A  50				PUSH eax
+ 0000011B  E8 00000000 E		CALL OutputStr
+ 00000120  E8 00000000 E		CALL InputInt
+ 00000125  89 45 F8			MOV [ebp-8], eax ;move G to ebp-8
+
+					;ask user for B
+ 00000128  8D 05 0000004D R		LEA eax, msgB
+ 0000012E  50				PUSH eax
+ 0000012F  E8 00000000 E		CALL OutputStr
+ 00000134  E8 00000000 E		CALL InputInt
+ 00000139  89 45 F4			MOV [ebp-12], eax ;move B to ebp-12
+
+					;Next Line formating
+ 0000013C  8D 05 00000022 R		LEA eax, msgLine 
+ 00000142  50				PUSH eax
+ 00000143  E8 00000000 E		CALL OutputStr
+ 00000148  8B D0			MOV edx, eax
+
+
+ 0000014A  FF 75 F4			PUSH [ebp-12] ;+16 B
+ 0000014D  FF 75 F8			PUSH [ebp-8] ;+12  G
+ 00000150  FF 75 FC			PUSH [ebp-4] ;+8   R
+ 00000153  E8 FFFFFEA8			CALL _grayScaleCPU
+ 00000158  8B D0			MOV edx, eax
+
+					;OUTPUT CPU
+ 0000015A  8D 05 00000061 R		LEA eax, msgCPU
+ 00000160  50				PUSH eax
+ 00000161  E8 00000000 E		CALL OutputStr
+					
+ 00000166  52				PUSH edx
+ 00000167  E8 00000000 E		CALL OutputInt
+
+					;Next Line formating
+ 0000016C  8D 05 00000022 R		LEA eax, msgLine 
+ 00000172  50				PUSH eax
+ 00000173  E8 00000000 E		CALL OutputStr
+ 00000178  8B D0			MOV edx, eax
+
+ 0000017A  FF 75 F4			PUSH [ebp-12] ;+16 B
+ 0000017D  FF 75 F8			PUSH [ebp-8] ;+12  G
+ 00000180  FF 75 FC			PUSH [ebp-4] ;+8   R
+ 00000183  E8 FFFFFECA			CALL _grayScaleFPU
+
+
+
+					;Ask user if they want to exit loop or not
+ 00000188  8D 05 00000000 R		LEA eax, msgExit ;ask user if they want to exit
+ 0000018E  50				PUSH eax
+ 0000018F  E8 00000000 E		CALL OutputStr
+ 00000194  E8 00000000 E		CALL InputInt
+
+					;end or redo program
+ 00000199  8B C8			MOV ecx, eax
+ 0000019B  83 F9 00			CMP ecx, 0
+ 0000019E  0F 85 FFFFFF5C		JNZ startLoop
+
+					;pop stack
+ 000001A4  8B E5			MOV esp, ebp
+ 000001A6  5D				POP ebp
+
+					
+					INVOKE ExitProcess, 0
+ 000001AE			Public _start
+				END
+Microsoft (R) Macro Assembler Version 6.11		    09/28/23 15:42:49
+src\P08.asm						     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+FLAT . . . . . . . . . . . . . .	GROUP
+STACK  . . . . . . . . . . . . .	32 Bit	 00001000 DWord	  Stack	  'STACK'	 
+_DATA  . . . . . . . . . . . . .	32 Bit	 0000007B DWord	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 000001AE DWord	  Public  'CODE'	
+
+
+Procedures,  parameters and locals:
+
+                N a m e                 Type     Value    Attr
+
+$$$$$$00003  . . . . . . . . . .	P Near	 000000FA _TEXT	Length= 000000B4 Private
+  startLoop  . . . . . . . . . .	L Near	 00000100 _TEXT	
+ExitProcess  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+InputInt . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+InputStr . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+OutputFloat8 . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+OutputFloat  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+OutputInt  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+OutputStr  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+_grayScaleCPU  . . . . . . . . .	P Near	 00000000 _TEXT	Length= 00000052 Public
+_grayScaleFPU  . . . . . . . . .	P Near	 00000052 _TEXT	Length= 000000A8 Public
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+@CodeSize  . . . . . . . . . . .	Number	 00000000h   
+@DataSize  . . . . . . . . . . .	Number	 00000000h   
+@Interface . . . . . . . . . . .	Number	 00000000h   
+@Model . . . . . . . . . . . . .	Number	 00000007h   
+@code  . . . . . . . . . . . . .	Text   	 _TEXT
+@data  . . . . . . . . . . . . .	Text   	 FLAT
+@fardata?  . . . . . . . . . . .	Text   	 FLAT
+@fardata . . . . . . . . . . . .	Text   	 FLAT
+@stack . . . . . . . . . . . . .	Text   	 FLAT
+IO_INC . . . . . . . . . . . . .	Text   	 1
+_start . . . . . . . . . . . . .	L Near	 000000FA _TEXT	Public
+msgB . . . . . . . . . . . . . .	Byte	 0000004D _DATA	
+msgCPU . . . . . . . . . . . . .	Byte	 00000061 _DATA	
+msgExit  . . . . . . . . . . . .	Byte	 00000000 _DATA	
+msgFPU . . . . . . . . . . . . .	Byte	 0000006E _DATA	
+msgG . . . . . . . . . . . . . .	Byte	 00000039 _DATA	
+msgLine  . . . . . . . . . . . .	Byte	 00000022 _DATA	
+msgR . . . . . . . . . . . . . .	Byte	 00000025 _DATA	
+startLoop  . . . . . . . . . . .	L Near	 00000100 _TEXT	
+
+	   0 Warnings
+	   0 Errors

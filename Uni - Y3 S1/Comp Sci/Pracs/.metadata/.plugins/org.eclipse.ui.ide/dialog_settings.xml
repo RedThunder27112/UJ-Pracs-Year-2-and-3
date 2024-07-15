@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<section name="SmartImportWizard">
+		<item key="SmartImportRootWizardPage.STORE_HIDE_ALREADY_OPEN" value="false"/>
+		<item key="SmartImportRootWizardPage.STORE_CLOSE_IMPORTED" value="false"/>
+		<item key="SmartImportRootWizardPage.STORE_NESTED_PROJECTS" value="true"/>
+		<item key="SmartImportRootWizardPage.STORE_CONFIGURE_NATURES" value="true"/>
+		<list key="org.eclipse.ui.internal.wizards.datatransfer.SmartImportRootWizardPage.knownSources">
+			<item value="C:\Users\redth\OneDrive\Desktop\Uni - Y3 S1\Comp Sci\Pracs\221003350_P10"/>
+			<item value="C:\Users\redth\OneDrive\Desktop\Uni - Y3 S1\Comp Sci\Pracs\Prac 9\221003350_P09"/>
+			<item value="C:\Users\redth\OneDrive\Desktop\Uni - Y3 S1\Comp Sci\Pracs\221003350_P09"/>
+			<item value="C:\Users\redth\OneDrive\Desktop\Uni - Y3 S1\Comp Sci\Pracs\221003350_P08"/>
+			<item value="C:\Users\redth\OneDrive\Desktop\Uni - Y3 S1\Comp Sci\Pracs\221003350_P07"/>
+			<item value="E:\2nd Year UNi - Semseter 1\Comp Sci\Sischy_AB_221003350_CSC02A2_2022_PX"/>
+			<item value="C:\Users\redth\OneDrive\Desktop\Uni - Y3 S1\Comp Sci\Pracs\221003350_MiniProject"/>
+			<item value="C:\Users\redth\OneDrive\Desktop\Uni - Y3 S1\Comp Sci\Pracs\221003350_P06"/>
+			<item value="C:\Users\redth\OneDrive\Desktop\Uni - Y3 S1\Comp Sci\Pracs\221003350_P05"/>
+			<item value="C:\Users\redth\OneDrive\Desktop\Uni - Y3 S1\Comp Sci\Pracs\221003350_P04"/>
+			<item value="C:\Users\redth\OneDrive\Desktop\Uni - Y3 S1\Comp Sci\Pracs\Sischy_AB_221003350_CSC03A3_2023_P02"/>
+		</list>
+	</section>
+</section>

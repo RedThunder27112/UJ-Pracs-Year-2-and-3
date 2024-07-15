@@ -1,0 +1,15 @@
+
+public class Main {
+
+	public static void main(String[] args) 
+	{
+		int i = 0;
+		double d = 2.0;
+		
+		i = (int)4 / (int) 2.4;
+		
+		System.out.println(i);
+
+	}
+
+}
